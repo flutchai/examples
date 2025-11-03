@@ -1,0 +1,175 @@
+{
+  "companySlug": "flutch",
+  "name": "financial-ledger",
+  "title": "Financial Ledger",
+  "description": "Complete double-entry bookkeeping system that processes financial transactions, validates entries, and maintains accurate accounting records",
+  "detailedDescription": "Comprehensive transaction processing with intent parsing, account resolution, transaction building, validation, and result presentation. Supports deposits, expenses, and transfers with proper double-entry accounting principles.",
+
+  "category": "specialized",
+  "author": "Flutch Team",
+  "maintainer": "Amelie Graph Team",
+  "repository": "amelie-monorepo/packages/graphs/ledger",
+  "tags": ["ledger", "accounting", "transactions", "double-entry", "financial"],
+  "visibility": "corporate",
+
+  "ui": {
+    "enabled": true,
+    "title": "Financial Ledger",
+    "description": "Comprehensive double-entry bookkeeping system",
+    "defaultScreen": "reports",
+    "menu": ["reports", "accounts", "transactions"],
+    "screens": {
+      "accounts": {
+        "title": "Chart of Accounts",
+        "type": "dashboard",
+        "endpoint": "accounts.list",
+        "widgets": [
+          {
+            "type": "table",
+            "title": "Assets",
+            "data_path": "assets"
+          },
+          {
+            "type": "table",
+            "title": "Liabilities",
+            "data_path": "liabilities"
+          },
+          {
+            "type": "table",
+            "title": "Equity",
+            "data_path": "equity"
+          },
+          {
+            "type": "table",
+            "title": "Revenue",
+            "data_path": "revenue"
+          },
+          {
+            "type": "table",
+            "title": "Expenses",
+            "data_path": "expenses"
+          }
+        ],
+        "actions": [
+          {
+            "type": "navigate",
+            "target": "accounts.create",
+            "label": "New Account",
+            "variant": "primary"
+          },
+          {
+            "type": "navigate",
+            "target": "accounts.setupDefaults",
+            "label": "Setup Default Accounts",
+            "variant": "secondary"
+          }
+        ]
+      },
+      "accounts.create": {
+        "title": "Create New Account",
+        "type": "form",
+        "endpoint": "accounts.create",
+        "fields": [
+          {
+            "name": "accountCode",
+            "type": "text",
+            "label": "Account Code",
+            "required": true
+          },
+          {
+            "name": "accountName",
+            "type": "text",
+            "label": "Account Name",
+            "required": true
+          },
+          {
+            "name": "accountType",
+            "type": "select",
+            "label": "Account Type",
+            "required": true,
+            "options": [
+              { "value": "ASSET", "label": "Asset" },
+              { "value": "LIABILITY", "label": "Liability" },
+              { "value": "EQUITY", "label": "Equity" },
+              { "value": "REVENUE", "label": "Revenue" },
+              { "value": "EXPENSE", "label": "Expense" }
+            ]
+          },
+          {
+            "name": "description",
+            "type": "textarea",
+            "label": "Description",
+            "required": false
+          }
+        ],
+        "actions": [
+          { "type": "submit", "label": "Create Account", "variant": "primary" },
+          {
+            "type": "navigate",
+            "target": "accounts",
+            "label": "Cancel",
+            "variant": "secondary"
+          }
+        ]
+      },
+      "transactions": {
+        "title": "Journal Entries",
+        "type": "table",
+        "endpoint": "transactions.list",
+        "columns": [
+          { "id": "date", "title": "Date", "format": "date" },
+          { "id": "debitAccount", "title": "From Account", "format": "text" },
+          { "id": "creditAccount", "title": "To Account", "format": "text" },
+          { "id": "amount", "title": "Amount", "format": "currency" },
+          { "id": "description", "title": "Description", "format": "text" }
+        ],
+        "actions": [
+          {
+            "type": "navigate",
+            "target": "transactions.create",
+            "label": "New Transaction",
+            "variant": "primary"
+          }
+        ]
+      },
+      "reports": {
+        "title": "Financial Reports",
+        "type": "dashboard",
+        "endpoint": "accounts.balances",
+        "widgets": [
+          {
+            "type": "summary",
+            "title": "Financial Summary",
+            "data_path": "summary"
+          },
+          {
+            "type": "table",
+            "title": "Top Asset Accounts",
+            "data_path": "topAccounts"
+          },
+          {
+            "type": "table",
+            "title": "Recent Transactions",
+            "data_path": "recentTransactions"
+          }
+        ]
+      }
+    }
+  },
+
+  "versioning": {
+    "strategy": "semver",
+    "defaultVersion": "1.0.0",
+    "supportedVersions": ["1.0.0"]
+  },
+
+  "versions": {
+    "1.0.0": {
+      "status": "stable",
+      "releaseDate": "2024-01-15T00:00:00.000Z",
+      "isActive": true,
+      "visibility": "public",
+      "configSchemaPath": "./src/graph/versions/v1.0.0/config-schema.json"
+    }
+  }
+}

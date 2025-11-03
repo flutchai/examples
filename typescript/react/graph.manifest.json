@@ -1,0 +1,27 @@
+{
+  "companySlug": "flutch",
+  "name": "react",
+  "title": "ReAct Orchestration Graph",
+  "description": "Generic ReAct workflow over MCP tools with iterative planning, execution, and reflection.",
+  "detailedDescription": "LangGraph-powered orchestrator that plans which MCP tool to call, executes it, reflects on the observation, and either continues searching, asks for clarification, or produces a grounded answer. Works with any tool catalog configured at runtime.",
+  "category": "retrieval",
+  "author": "Flutch Team",
+  "maintainer": "Graph Platform",
+  "repository": "amelie-monorepo/packages/graphs/react",
+  "tags": ["react", "retrieval", "planning", "mcp"],
+  "visibility": "public",
+  "versioning": {
+    "strategy": "semver",
+    "defaultVersion": "1.0.0",
+    "supportedVersions": ["1.0.0"]
+  },
+  "versions": {
+    "1.0.0": {
+      "status": "stable",
+      "releaseDate": "2025-01-21T00:00:00.000Z",
+      "isActive": true,
+      "visibility": "private",
+      "configSchemaPath": "./src/versions/v1.0.0/config-schema.json"
+    }
+  }
+}

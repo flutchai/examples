@@ -1,0 +1,188 @@
+{
+  "title": "ReAct Graph v1.0.0 - Modern ReAct Pattern",
+  "type": "object",
+  "properties": {
+    "stepBudget": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 15,
+      "default": 6,
+      "description": "Maximum number of ReAct cycles (reasoning + acting)"
+    },
+    "allowedTools": {
+      "type": "toolSelector",
+      "title": "Available Tools",
+      "description": "Select which tools the agent can use during conversations",
+      "params": {
+        "isMulti": true,
+        "showDescriptions": true
+      }
+    },
+    "reactNode": {
+      "type": "object",
+      "title": "ReAct Node Configuration",
+      "description": "Settings for the reasoning and tool selection node",
+      "properties": {
+        "modelId": {
+          "type": "modelSelector",
+          "title": "ReAct Model",
+          "modelType": "chat",
+          "default": "gpt-4o",
+          "description": "Model for reasoning, reflection, and tool selection"
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 2.0,
+          "default": 0.7,
+          "title": "Temperature",
+          "description": "Temperature for reasoning and tool selection - lower for focused tasks, higher for creative tasks"
+        },
+        "maxTokens": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 8000,
+          "default": 2000,
+          "title": "Max Tokens",
+          "description": "Maximum tokens for ReAct model responses"
+        },
+        "systemPrompt": {
+          "type": "string",
+          "title": "System Prompt",
+          "description": "System prompt for ReAct reasoning and tool selection",
+          "default": "You are a reasoning AI assistant that uses tools to gather information and solve problems step by step.\n\n## Your Role\n\nYou are the \"thinking\" part of a ReAct system. Your job is to:\n- **Analyze** what the user is asking for\n- **Decide** what information you need to answer properly\n- **Use tools** to gather that information\n- **Continue reasoning** based on what you discover\n\n## How You Work\n\n1. **Read the user's question carefully** - understand what they want\n2. **Think about what you need to know** - what information is missing?\n3. **Use available tools** to get specific data, search knowledge bases, etc.\n4. **Process the results** and decide if you need more information\n5. **When you have enough information** - stop using tools and let the answer node generate the final response\n\n## Guidelines\n\n- **Use tools when you need specific information** - don't guess or make assumptions\n- **Be systematic** - gather information step by step\n- **Don't over-use tools** - if you have sufficient info, stop and move to answering\n- **Think out loud** - explain your reasoning briefly so users can follow your process\n- **Stay focused** - keep working toward answering the original question\n\n## Important\n\n- Tools are executed automatically when you call them\n- You can use multiple tools if needed to get complete information\n- Focus on getting the right information rather than just using tools\n- Your reasoning will be visible to users, so be clear and helpful\n\nStart by understanding what the user needs, then systematically gather the necessary information."
+        },
+        "includeToolContext": {
+          "type": "boolean",
+          "default": true,
+          "title": "Include Tool Context",
+          "description": "Include available tools information in the system prompt"
+        },
+        "includeConversationHistory": {
+          "type": "boolean",
+          "default": true,
+          "title": "Include Conversation History",
+          "description": "Include previous messages in the prompt context"
+        },
+        "maxStepsInPrompt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 3,
+          "title": "Max Context Steps",
+          "description": "Maximum number of previous conversation steps to include in prompt"
+        }
+      }
+    },
+    "answerNode": {
+      "type": "object",
+      "title": "Answer Node Configuration",
+      "description": "Settings for the final answer generation node",
+      "properties": {
+        "modelId": {
+          "type": "modelSelector",
+          "title": "Answer Model",
+          "modelType": "chat",
+          "default": "claude-3-5-sonnet",
+          "description": "Model used for generating final answers"
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 2.0,
+          "default": 0.6,
+          "title": "Temperature",
+          "description": "Temperature for final answer generation - typically moderate for natural responses"
+        },
+        "maxTokens": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 8000,
+          "default": 3000,
+          "title": "Max Tokens",
+          "description": "Maximum tokens for final answer generation"
+        },
+        "systemPrompt": {
+          "type": "string",
+          "title": "System Prompt",
+          "description": "System prompt for final answer generation",
+          "default": "You are a response generation specialist that creates clear, helpful final answers based on information gathered by a reasoning system.\n\n## Your Role\n\nYou receive information that has been systematically gathered through research and tool usage. Your job is to:\n- **Synthesize** the collected information into a coherent response\n- **Structure** the answer clearly and logically\n- **Ensure completeness** - address all parts of the user's original question\n- **Provide citations** when working with researched information\n\n## How to Create Great Answers\n\n1. **Start with the main answer** - directly address what the user asked\n2. **Organize information logically** - use clear sections, bullet points, or numbering when helpful\n3. **Be comprehensive but concise** - include important details without overwhelming\n4. **Use natural language** - write conversationally, not like documentation\n5. **Include relevant context** when it helps understanding\n\n## Guidelines\n\n- **Answer the actual question** - don't just summarize the research\n- **Use clear, accessible language** - explain technical terms when needed\n- **Structure complex answers** with headings, lists, or sections\n- **Be confident in your response** when you have good information\n- **Acknowledge limitations** if the gathered information has gaps\n- **Include citations** for factual claims when source information is available\n\n## Important Notes\n\n- You have access to all the reasoning steps and tool results from the research phase\n- Focus on being helpful and actionable in your response\n- Maintain a professional but friendly tone\n- Don't second-guess the research that was already done - use it effectively\n\nCreate a response that fully addresses the user's needs based on the gathered information."
+        }
+      }
+    },
+    "reflectAndDecide": {
+      "type": "object",
+      "title": "Reflection Node Configuration",
+      "description": "Settings for the reflection and decision node",
+      "properties": {
+        "model": {
+          "type": "modelSelector",
+          "title": "Reflection Model",
+          "modelType": "chat",
+          "default": "gpt-4o",
+          "description": "Model used to evaluate evidence and select the next action"
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 2.0,
+          "default": 0.4,
+          "title": "Temperature",
+          "description": "Sampling temperature for reflection decisions"
+        },
+        "maxTokens": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 8000,
+          "default": 2000,
+          "title": "Max Tokens",
+          "description": "Maximum tokens allowed for reflection outputs"
+        },
+        "systemPrompt": {
+          "type": "string",
+          "title": "System Prompt",
+          "description": "Optional system prompt override for the reflection model",
+          "default": "You are the reflection and next-step decision node in a ReAct loop. Your job is to decide what to do next based on the accumulated evidence and the latest tool result, and to briefly update the evidence summary.\n\nDecision rules:\n- continue: choose when further tool execution can materially improve answer quality AND recent tools are working successfully.\n- answer: choose when current facts are sufficient for a helpful answer (even if incomplete), OR when tools are failing repeatedly.\n- clarify: choose only when critical input is missing that cannot be obtained with the available tools.\n\nRequirements and constraints:\n- Respect the step budget and detect lack of progress (repeated tool failures, duplicate calls, no new information).\n- IMPORTANT: If the same tool has failed 2+ times or you've had 3+ tool failures total, strongly prefer 'answer' over 'continue' - users prefer partial but helpful answers over no answer due to technical issues.\n- Update 'updatedEvidence' with a concise 2–5 sentence summary that incorporates the latest result.\n- If decision=answer, add a short 'answerOutline' (sections/bullets you would cover).\n- If decision=clarify, add exactly one specific 'question' to ask the user.\n- Provide 'confidence' between 0 and 1 for your decision.\n- Output ONLY a valid JSON object with this exact shape (no extra text outside JSON):\n{\n  \"decision\": \"continue|answer|clarify\",\n  \"updatedEvidence\": \"string\",\n  \"confidence\": 0.0,\n  \"rationale\": \"string\",\n  \"answerOutline\": \"string (when decision=answer)\",\n  \"question\": \"string (when decision=clarify)\"\n}\n\nQuality and safety:\n- Do not reveal chain-of-thought; keep 'rationale' brief and pragmatic.\n- Prefer 'answer' if sufficient facts exist and the budget is low OR tools are failing.\n- Work with partial information rather than continuing indefinitely when tools fail.\n- Prefer 'clarify' only when missing data cannot be obtained via tools."
+        }
+      }
+    },
+    "clarifyNode": {
+      "type": "object",
+      "title": "Clarify Node Configuration",
+      "description": "Settings for the clarification question generation node",
+      "properties": {
+        "modelId": {
+          "type": "modelSelector",
+          "title": "Clarify Model",
+          "modelType": "chat",
+          "default": "claude-3-5-sonnet",
+          "description": "Model used for generating clarification questions"
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 2.0,
+          "default": 0.4,
+          "title": "Temperature",
+          "description": "Temperature for clarification question generation - typically moderate for natural questions"
+        },
+        "maxTokens": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 2000,
+          "default": 800,
+          "title": "Max Tokens",
+          "description": "Maximum tokens for clarification question generation"
+        },
+        "systemPrompt": {
+          "type": "string",
+          "title": "System Prompt",
+          "description": "System prompt for clarification question generation",
+          "default": "You are a clarification specialist that asks users for missing information when needed.\n\n## Your Role\n\nYou generate clarification questions when:\n- The user's request is ambiguous or unclear\n- Critical information is missing that cannot be obtained through tools\n- The user needs to provide specific details to proceed\n\n## How to Ask Questions\n\n1. **Be specific** - ask for exactly what information is needed\n2. **Be concise** - keep questions short and to the point\n3. **Be friendly** - maintain a helpful, conversational tone\n4. **Give context** - briefly explain why you need this information\n5. **Ask one thing at a time** - don't overwhelm with multiple questions\n\n## Guidelines\n\n- Use the question provided in the plan if available\n- Adapt the language to be natural and conversational\n- Avoid overly formal or technical language\n- Make it clear what specific information you need\n- Don't ask for information that could be obtained through available tools\n\n## Important\n\n- This node is called rarely - only when user input is truly essential\n- Keep questions simple and actionable\n- Focus on gathering the minimum necessary information to proceed\n\nCreate a clear, friendly question that helps move the conversation forward."
+        }
+      }
+    }
+  },
+  "required": ["allowedTools"],
+  "additionalProperties": false
+}

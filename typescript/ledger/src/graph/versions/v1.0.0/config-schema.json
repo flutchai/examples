@@ -1,0 +1,240 @@
+{
+  "version": "1.0.0",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "analyzeTransaction": {
+        "type": "object",
+        "title": "Transaction Analysis Node",
+        "description": "Configuration for AI-powered transaction parsing (single or batch)",
+        "properties": {
+          "llmConfig": {
+            "type": "object",
+            "title": "LLM Configuration",
+            "description": "LLM settings for transaction analysis",
+            "properties": {
+              "modelId": {
+                "type": "modelSelector",
+                "title": "Model ID",
+                "params": {
+                  "modelType": "chat",
+                  "isActive": true
+                },
+                "default": "gpt-4o-mini"
+              },
+              "temperature": {
+                "type": "number",
+                "title": "Temperature",
+                "default": 0.1,
+                "minimum": 0,
+                "maximum": 1
+              },
+              "maxTokens": {
+                "type": "number",
+                "title": "Max Tokens",
+                "default": 1000,
+                "minimum": 100,
+                "maximum": 4000
+              }
+            },
+            "required": ["modelId"]
+          }
+        },
+        "required": ["llmConfig"]
+      },
+      "buildTransaction": {
+        "type": "object",
+        "title": "Build Transaction Node",
+        "description": "Configuration for AI-powered account intelligence and mapping",
+        "properties": {
+          "llmConfig": {
+            "type": "object",
+            "title": "LLM Configuration",
+            "description": "LLM settings for account intelligence",
+            "properties": {
+              "modelId": {
+                "type": "modelSelector",
+                "title": "Model ID",
+                "params": {
+                  "modelType": "chat",
+                  "isActive": true
+                },
+                "default": "gpt-4o-mini"
+              },
+              "temperature": {
+                "type": "number",
+                "title": "Temperature",
+                "default": 0.3,
+                "minimum": 0,
+                "maximum": 1
+              },
+              "maxTokens": {
+                "type": "number",
+                "title": "Max Tokens",
+                "default": 4000,
+                "minimum": 500,
+                "maximum": 8000
+              }
+            },
+            "required": ["modelId"]
+          }
+        },
+        "required": ["llmConfig"]
+      },
+      "confirmAccounts": {
+        "type": "object",
+        "title": "Confirm Accounts Node",
+        "description": "Configuration for account confirmation and editing (Human-in-the-Loop)",
+        "properties": {
+          "llmConfig": {
+            "type": "object",
+            "title": "LLM Configuration",
+            "description": "LLM settings for parsing user edits",
+            "properties": {
+              "modelId": {
+                "type": "modelSelector",
+                "title": "Model ID",
+                "params": {
+                  "modelType": "chat",
+                  "isActive": true
+                },
+                "default": "gpt-4o-mini"
+              },
+              "temperature": {
+                "type": "number",
+                "title": "Temperature",
+                "default": 0.1,
+                "minimum": 0,
+                "maximum": 1
+              },
+              "maxTokens": {
+                "type": "number",
+                "title": "Max Tokens",
+                "default": 1000,
+                "minimum": 200,
+                "maximum": 3000
+              }
+            },
+            "required": ["modelId"]
+          }
+        }
+      },
+      "presentResult": {
+        "type": "object",
+        "title": "Result Presentation Node",
+        "description": "Configuration for AI-enhanced result presentation",
+        "properties": {
+          "llmConfig": {
+            "type": "object",
+            "title": "LLM Configuration",
+            "description": "LLM settings for result presentation",
+            "properties": {
+              "modelId": {
+                "type": "modelSelector",
+                "title": "Model ID",
+                "params": {
+                  "modelType": "chat",
+                  "isActive": true
+                },
+                "default": "gpt-4o"
+              },
+              "temperature": {
+                "type": "number",
+                "title": "Temperature",
+                "default": 0.4,
+                "minimum": 0,
+                "maximum": 1
+              },
+              "maxTokens": {
+                "type": "number",
+                "title": "Max Tokens",
+                "default": 1500,
+                "minimum": 500,
+                "maximum": 3000
+              }
+            },
+            "required": ["modelId"]
+          }
+        }
+      },
+      "routeIntent": {
+        "type": "object",
+        "title": "Intent Routing Node",
+        "description": "Configuration for LLM-based intent routing to appropriate subgraph",
+        "properties": {
+          "llmConfig": {
+            "type": "object",
+            "title": "LLM Configuration",
+            "description": "LLM settings for intent analysis and routing",
+            "properties": {
+              "modelId": {
+                "type": "modelSelector",
+                "title": "Model ID",
+                "params": {
+                  "modelType": "chat",
+                  "isActive": true
+                },
+                "default": "gpt-4o-mini"
+              },
+              "temperature": {
+                "type": "number",
+                "title": "Temperature",
+                "default": 0.0,
+                "minimum": 0,
+                "maximum": 1
+              },
+              "maxTokens": {
+                "type": "number",
+                "title": "Max Tokens",
+                "default": 50,
+                "minimum": 10,
+                "maximum": 200
+              }
+            },
+            "required": ["modelId"]
+          }
+        },
+        "required": ["llmConfig"]
+      },
+      "accountManagement": {
+        "type": "object",
+        "title": "Account Management Subgraph",
+        "description": "Configuration for account management operations with LLM tool binding",
+        "properties": {
+          "llmConfig": {
+            "type": "object",
+            "title": "LLM Configuration",
+            "description": "LLM settings for account operations (list, create, update)",
+            "properties": {
+              "modelId": {
+                "type": "modelSelector",
+                "title": "Model ID",
+                "params": {
+                  "modelType": "chat",
+                  "isActive": true
+                },
+                "default": "gpt-4o"
+              },
+              "temperature": {
+                "type": "number",
+                "title": "Temperature",
+                "default": 0.1,
+                "minimum": 0,
+                "maximum": 1
+              },
+              "maxTokens": {
+                "type": "number",
+                "title": "Max Tokens",
+                "default": 2000,
+                "minimum": 500,
+                "maximum": 4000
+              }
+            },
+            "required": ["modelId"]
+          }
+        },
+        "required": ["llmConfig"]
+      }
+    }
+  }
+}

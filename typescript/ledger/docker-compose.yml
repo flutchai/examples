@@ -1,0 +1,75 @@
+version: "3.8"
+
+services:
+  # Redis для хранения callback токенов
+  redis:
+    image: redis:7-alpine
+    container_name: ledger-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - ledger-network
+
+  # MongoDB для хранения состояния графа
+  mongodb:
+    image: mongo:7
+    container_name: ledger-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: ledger-test
+    volumes:
+      - mongo-data:/data/db
+      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - ledger-network
+
+  # Ledger Graph Service
+  ledger-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ledger-service
+    ports:
+      - "3003:3003"
+    environment:
+      NODE_ENV: development
+      PORT: 3003
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/ledger-test?authSource=admin
+      MONGO_DB_NAME: ledger-test
+      REDIS_URL: redis://redis:6379
+      LOG_LEVEL: debug
+    depends_on:
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+      - ./callbacks:/app/callbacks
+    command: yarn dev
+    networks:
+      - ledger-network
+
+volumes:
+  redis-data:
+  mongo-data:
+
+networks:
+  ledger-network:
+    driver: bridge

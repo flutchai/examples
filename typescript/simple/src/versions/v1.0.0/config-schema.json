@@ -1,0 +1,54 @@
+{
+  "version": "1.0.0",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "systemPrompt": {
+        "type": "string",
+        "title": "System Prompt",
+        "format": "textarea",
+        "default": "You are a helpful AI assistant.",
+        "description": "Base system prompt for the AI assistant"
+      },
+      "modelSettings": {
+        "type": "object",
+        "title": "Model Settings",
+        "description": "Configuration for AI model behavior",
+        "properties": {
+          "modelId": {
+            "type": "string",
+            "title": "Model",
+            "description": "AI model identifier to use"
+          },
+          "temperature": {
+            "type": "number",
+            "title": "Temperature",
+            "default": 0.7,
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Controls randomness in model outputs"
+          },
+          "maxTokens": {
+            "type": "integer",
+            "title": "Max Tokens",
+            "default": 2000,
+            "minimum": 100,
+            "maximum": 4000,
+            "description": "Maximum tokens in response"
+          }
+        },
+        "required": ["modelId"]
+      },
+      "availableTools": {
+        "type": "toolSelector",
+        "title": "Available Tools",
+        "description": "Select which tools the agent can use during conversations",
+        "params": {
+          "isMulti": true,
+          "showDescriptions": true
+        }
+      }
+    },
+    "required": ["systemPrompt", "modelSettings", "availableTools"]
+  }
+}

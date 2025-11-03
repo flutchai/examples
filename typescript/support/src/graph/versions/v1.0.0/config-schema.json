@@ -1,0 +1,538 @@
+{
+  "version": "1.0.0",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "queryTransformation": {
+        "type": "object",
+        "title": "Query Transformation",
+        "description": "Normalizes and expands queries with conversation context for better routing and retrieval.",
+        "properties": {
+          "llm": {
+            "type": "object",
+            "title": "LLM Settings",
+            "properties": {
+              "modelId": {
+                "type": "modelSelector",
+                "title": "Model",
+                "modelType": "chat",
+                "default": "gpt-4o-mini"
+              },
+              "temperature": {
+                "type": "number",
+                "title": "Temperature",
+                "default": 0.3,
+                "minimum": 0,
+                "maximum": 2
+              },
+              "maxTokens": {
+                "type": "number",
+                "title": "Max Tokens",
+                "default": 800,
+                "minimum": 200,
+                "maximum": 2000
+              }
+            }
+          },
+          "systemPrompt": {
+            "type": "string",
+            "title": "Custom System Prompt",
+            "description": "Custom prompt for query transformation. Leave empty to use default."
+          },
+          "enableContextExpansion": {
+            "type": "boolean",
+            "title": "Enable Context Expansion",
+            "default": true,
+            "description": "Expand queries with conversation history context"
+          },
+          "maxHistoryMessages": {
+            "type": "number",
+            "title": "Max History Messages",
+            "default": 6,
+            "minimum": 0,
+            "maximum": 20,
+            "description": "Number of recent messages to consider for context"
+          }
+        }
+      },
+      "conversationRouter": {
+        "type": "object",
+        "title": "Conversation Router",
+        "description": "Routes queries to the right agent. Keep it fast and cheap; lower temperature for stable classification.",
+        "properties": {
+          "model": {
+            "type": "modelSelector",
+            "title": "Model",
+            "modelType": "chat",
+            "default": "gpt-4o-mini"
+          },
+          "temperature": {
+            "type": "number",
+            "title": "Temperature",
+            "default": 0.2,
+            "minimum": 0,
+            "maximum": 2
+          },
+          "maxTokens": {
+            "type": "number",
+            "title": "Max Tokens",
+            "default": 800,
+            "minimum": 200,
+            "maximum": 4000
+          },
+          "systemPrompt": {
+            "type": "string",
+            "title": "System Prompt",
+            "default": "You are an intelligent query router in a technical support system.\n\nYour task is to analyze user queries and decide which specialist to route them to:\n\n1. **AuthoritativeAgent** - for clear documentation queries:\n   - API, function, configuration questions\n   - Searching for specific information in documentation\n   - Simple technical questions with straightforward answers\n   - Example: \"How to configure OAuth2?\", \"What parameters does createUser method have?\"\n\n2. **ResearchAgent** - for complex analytical queries:\n   - Technology or approach comparisons\n   - Multi-step research questions\n   - Questions requiring synthesis from multiple sources\n   - Example: \"Compare authentication methods\", \"How to best organize architecture?\"\n\n3. **EscalationAgent** - for problematic cases:\n   - Unclear or ambiguous queries\n   - Critical issues requiring immediate attention\n   - Complaints or emotionally charged messages\n   - Example: \"Nothing works!\", \"I have a system problem\"\n\nAnalyze the query and provide a structured routing decision with your reasoning."
+          }
+        }
+      },
+      "authoritativeAgent": {
+        "type": "object",
+        "title": "Authoritative Agent",
+        "description": "High-precision KB answers. Uses quick CoRAG + reranker to find canonical docs.",
+        "properties": {
+          "model": {
+            "type": "modelSelector",
+            "title": "Model",
+            "modelType": "chat",
+            "default": "gpt-5-nano"
+          },
+          "temperature": {
+            "type": "number",
+            "title": "Temperature",
+            "default": 0.3,
+            "minimum": 0,
+            "maximum": 2
+          },
+          "maxTokens": {
+            "type": "number",
+            "title": "Max Tokens",
+            "default": 2000,
+            "minimum": 500,
+            "maximum": 8000
+          },
+          "systemPrompt": {
+            "type": "string",
+            "title": "System Prompt",
+            "default": "You are an authoritative technical support agent. Your task is to provide accurate, documentation-based answers.\n\nWORKING PRINCIPLES:\n- Use ONLY information from provided documents\n- Be precise and specific\n- If uncertain - be honest about it\n- Include source references\n- Provide practical examples when possible\n\nRESPONSE FORMAT:\nCONFIDENCE: [number from 0.0 to 1.0]\nREASONING: [why this confidence level]\nANSWER: [main answer to user]\n\nIMPORTANT:\n- If confidence below 0.5 - honestly say additional research is needed\n- Never make up information not in the documents"
+          },
+          "coragRetrieval": {
+            "type": "object",
+            "title": "CoRAG Retrieval",
+            "properties": {
+              "maxIterations": {
+                "type": "number",
+                "title": "Max Iterations",
+                "default": 3,
+                "minimum": 1,
+                "maximum": 10
+              },
+              "adequacyThreshold": {
+                "type": "number",
+                "title": "Adequacy Threshold",
+                "default": 0.75,
+                "minimum": 0.5,
+                "maximum": 0.95
+              },
+              "diversityWeight": {
+                "type": "number",
+                "title": "Diversity Weight",
+                "default": 0.15,
+                "minimum": 0,
+                "maximum": 0.5
+              },
+              "rerankingEnabled": {
+                "type": "boolean",
+                "title": "Enable Reranking",
+                "default": true
+              },
+              "topK": {
+                "type": "number",
+                "title": "Top K",
+                "default": 8,
+                "minimum": 3,
+                "maximum": 20
+              }
+            }
+          },
+          "knowledgeReranker": {
+            "type": "object",
+            "title": "Knowledge Reranker",
+            "properties": {
+              "model": {
+                "type": "modelSelector",
+                "title": "Rerank Model",
+                "modelType": "rerank",
+                "default": "cohere-rerank-v3"
+              },
+              "semanticWeight": {
+                "type": "number",
+                "title": "Semantic Weight",
+                "default": 0.6,
+                "minimum": 0,
+                "maximum": 1
+              },
+              "contextualWeight": {
+                "type": "number",
+                "title": "Contextual Weight",
+                "default": 0.3,
+                "minimum": 0,
+                "maximum": 1
+              },
+              "freshnessWeight": {
+                "type": "number",
+                "title": "Freshness Weight",
+                "default": 0.1,
+                "minimum": 0,
+                "maximum": 1
+              },
+              "topK": {
+                "type": "number",
+                "title": "Top K",
+                "default": 8,
+                "minimum": 3,
+                "maximum": 20
+              }
+            }
+          }
+        }
+      },
+      "researchAgent": {
+        "type": "object",
+        "title": "Research Agent",
+        "description": "Deep analysis with query decomposition, iterative CoRAG and validation.",
+        "properties": {
+          "model": {
+            "type": "modelSelector",
+            "title": "Model",
+            "modelType": "chat",
+            "default": "gpt-5-nano"
+          },
+          "temperature": {
+            "type": "number",
+            "title": "Temperature",
+            "default": 0.7,
+            "minimum": 0,
+            "maximum": 2
+          },
+          "maxTokens": {
+            "type": "number",
+            "title": "Max Tokens",
+            "default": 3000,
+            "minimum": 1000,
+            "maximum": 8000
+          },
+          "reflectionTemperature": {
+            "type": "number",
+            "title": "Reflection Temperature",
+            "default": 0.5,
+            "minimum": 0,
+            "maximum": 2
+          },
+          "systemPrompt": {
+            "type": "string",
+            "title": "System Prompt",
+            "default": "You are a research agent specializing in comprehensive technical analysis.\n\nYour task is to:\n- Decompose complex queries into research sub-questions\n- Conduct iterative information retrieval\n- Synthesize findings from multiple sources\n- Validate information accuracy and completeness\n- Provide detailed, well-researched answers\n\nFocus on thoroughness and accuracy over speed."
+          },
+          "reflectionPrompt": {
+            "type": "string",
+            "title": "Reflection Prompt",
+            "default": "You are a quality validator for research responses.\n\nAnalyze the provided answer for:\n- Factual accuracy\n- Completeness\n- Clarity and tone\n- Security considerations\n- Overall quality\n\nProvide a quality score (0.0-1.0) and specific improvement recommendations."
+          },
+          "queryDecomposer": {
+            "type": "object",
+            "title": "Query Decomposer",
+            "properties": {
+              "maxSubQueries": {
+                "type": "number",
+                "title": "Max Sub-Queries",
+                "default": 5,
+                "minimum": 1,
+                "maximum": 10
+              },
+              "complexityThreshold": {
+                "type": "number",
+                "title": "Complexity Threshold",
+                "default": 1.5,
+                "minimum": 1.0,
+                "maximum": 3.0
+              },
+              "enableDependencyAnalysis": {
+                "type": "boolean",
+                "title": "Dependency Analysis",
+                "default": true
+              },
+              "minSubQueryLength": {
+                "type": "number",
+                "title": "Min Sub-Query Length",
+                "default": 10,
+                "minimum": 5,
+                "maximum": 50
+              }
+            }
+          },
+          "coragRetrieval": {
+            "type": "object",
+            "title": "CoRAG Retrieval",
+            "properties": {
+              "maxIterations": {
+                "type": "number",
+                "title": "Max Iterations",
+                "default": 5,
+                "minimum": 1,
+                "maximum": 10
+              },
+              "adequacyThreshold": {
+                "type": "number",
+                "title": "Adequacy Threshold",
+                "default": 0.7,
+                "minimum": 0.5,
+                "maximum": 0.95
+              },
+              "diversityWeight": {
+                "type": "number",
+                "title": "Diversity Weight",
+                "default": 0.2,
+                "minimum": 0,
+                "maximum": 0.5
+              },
+              "rerankingEnabled": {
+                "type": "boolean",
+                "title": "Enable Reranking",
+                "default": true
+              },
+              "topK": {
+                "type": "number",
+                "title": "Top K",
+                "default": 12,
+                "minimum": 3,
+                "maximum": 20
+              }
+            }
+          },
+          "knowledgeReranker": {
+            "type": "object",
+            "title": "Knowledge Reranker",
+            "properties": {
+              "model": {
+                "type": "modelSelector",
+                "title": "Rerank Model",
+                "modelType": "rerank",
+                "default": "cohere-rerank-v3"
+              },
+              "semanticWeight": {
+                "type": "number",
+                "title": "Semantic Weight",
+                "default": 0.6,
+                "minimum": 0,
+                "maximum": 1
+              },
+              "contextualWeight": {
+                "type": "number",
+                "title": "Contextual Weight",
+                "default": 0.3,
+                "minimum": 0,
+                "maximum": 1
+              },
+              "freshnessWeight": {
+                "type": "number",
+                "title": "Freshness Weight",
+                "default": 0.1,
+                "minimum": 0,
+                "maximum": 1
+              },
+              "topK": {
+                "type": "number",
+                "title": "Top K",
+                "default": 10,
+                "minimum": 3,
+                "maximum": 20
+              }
+            }
+          },
+          "reflectionValidator": {
+            "type": "object",
+            "title": "Reflection Validator",
+            "properties": {
+              "enableFactChecking": {
+                "type": "boolean",
+                "title": "Fact Checking",
+                "default": true
+              },
+              "enableToneAnalysis": {
+                "type": "boolean",
+                "title": "Tone Analysis",
+                "default": true
+              },
+              "enableSecurityCheck": {
+                "type": "boolean",
+                "title": "Security Check",
+                "default": true
+              },
+              "enableCompletenessCheck": {
+                "type": "boolean",
+                "title": "Completeness Check",
+                "default": true
+              },
+              "minQualityScore": {
+                "type": "number",
+                "title": "Min Quality Score",
+                "default": 0.7,
+                "minimum": 0.3,
+                "maximum": 0.95
+              },
+              "strictMode": {
+                "type": "boolean",
+                "title": "Strict Mode",
+                "default": false
+              }
+            }
+          }
+        }
+      },
+      "escalationAgent": {
+        "type": "object",
+        "title": "Escalation Agent",
+        "description": "Empathetic messaging and human handoff.",
+        "properties": {
+          "model": {
+            "type": "modelSelector",
+            "title": "Model",
+            "modelType": "chat",
+            "default": "gpt-4o-mini"
+          },
+          "temperature": {
+            "type": "number",
+            "title": "Temperature",
+            "default": 0.9,
+            "minimum": 0,
+            "maximum": 2
+          },
+          "maxTokens": {
+            "type": "number",
+            "title": "Max Tokens",
+            "default": 1200,
+            "minimum": 300,
+            "maximum": 4000
+          },
+          "empathyTemperature": {
+            "type": "number",
+            "title": "Empathy Temperature",
+            "default": 0.9,
+            "minimum": 0,
+            "maximum": 2
+          },
+          "analysisPrompt": {
+            "type": "string",
+            "title": "Analysis Prompt",
+            "default": "You are an escalation expert in technical support.\n\nYour task is to analyze the request and determine:\n- Problem type (unclear_query, critical_issue, emotional_user, technical_failure, complex_case)\n- Severity level (low, medium, high, critical)\n- Whether human escalation is required\n- Estimated resolution time\n\nBe precise in categorization for proper routing."
+          },
+          "clarificationPrompt": {
+            "type": "string",
+            "title": "Clarification Prompt",
+            "default": "You are a specialist in handling unclear queries.\n\nYour task:\n- Understand what the user really wants to know\n- Ask specific, helpful clarifying questions\n- Guide them toward a clear, actionable question\n- Be patient and supportive\n\nHelp the user formulate a clear question."
+          },
+          "criticalIssuePrompt": {
+            "type": "string",
+            "title": "Critical Issue Prompt",
+            "default": "You are a critical issue response specialist.\n\nYour task:\n- Acknowledge the urgency immediately\n- Provide immediate actionable steps\n- Gather necessary diagnostic information\n- Escalate to human support when appropriate\n- Remain calm and professional\n\nPrioritize quick resolution and user confidence."
+          },
+          "empathyPrompt": {
+            "type": "string",
+            "title": "Empathy Prompt",
+            "default": "You are an empathetic support specialist.\n\nYour approach:\n- Acknowledge the user's frustration genuinely\n- Use calming, understanding language\n- Focus on solutions, not blame\n- Offer multiple ways to help\n- Be patient and supportive throughout\n\nHelp de-escalate while solving the problem."
+          },
+          "technicalFailurePrompt": {
+            "type": "string",
+            "title": "Technical Failure Prompt",
+            "default": "You are a technical failure specialist.\n\nYour task:\n- Analyze the technical context and error information\n- Provide systematic troubleshooting steps\n- Explain what went wrong in simple terms\n- Offer preventive measures for the future\n- Know when to escalate to engineering\n\nFocus on both immediate fixes and long-term stability."
+          },
+          "complexCasePrompt": {
+            "type": "string",
+            "title": "Complex Case Prompt",
+            "default": "You are a complex case specialist.\n\nYour approach:\n- Break down complex issues into manageable parts\n- Address each component systematically\n- Coordinate between different aspects of the problem\n- Maintain clear communication throughout\n- Set realistic expectations for resolution\n\nProvide comprehensive assistance while keeping it understandable."
+          }
+        }
+      },
+      "outputAgentResponse": {
+        "type": "object",
+        "title": "Output Agent Response",
+        "description": "Generates final streaming response for successful agent results.",
+        "properties": {
+          "model": {
+            "type": "modelSelector",
+            "title": "Model",
+            "modelType": "chat",
+            "default": "gpt-4o-mini"
+          },
+          "temperature": {
+            "type": "number",
+            "title": "Temperature",
+            "default": 0.3,
+            "minimum": 0,
+            "maximum": 2
+          },
+          "maxTokens": {
+            "type": "number",
+            "title": "Max Tokens",
+            "default": 2000,
+            "minimum": 500,
+            "maximum": 8000
+          }
+        }
+      },
+      "clarifyEscalate": {
+        "type": "object",
+        "title": "Clarify & Escalate",
+        "description": "Handles clarification questions and escalation messages.",
+        "properties": {
+          "llm": {
+            "type": "object",
+            "title": "LLM Settings",
+            "properties": {
+              "modelId": {
+                "type": "modelSelector",
+                "title": "Model",
+                "modelType": "chat",
+                "default": "gpt-4o-mini"
+              },
+              "temperature": {
+                "type": "number",
+                "title": "Temperature",
+                "default": 0.3,
+                "minimum": 0,
+                "maximum": 2
+              },
+              "maxTokens": {
+                "type": "number",
+                "title": "Max Tokens",
+                "default": 300,
+                "minimum": 100,
+                "maximum": 1000
+              }
+            }
+          },
+          "max_clarification_attempts": {
+            "type": "number",
+            "title": "Max Clarification Attempts",
+            "default": 1,
+            "minimum": 1,
+            "maximum": 3
+          },
+          "clarificationPrompt": {
+            "type": "string",
+            "title": "Custom Clarification Prompt",
+            "description": "Custom prompt for clarification questions. Variables: {locale}, {clarificationCount}, {context}"
+          },
+          "escalationPrompt": {
+            "type": "string",
+            "title": "Custom Escalation Prompt",
+            "description": "Custom prompt for escalation messages. Variables: {locale}, {clarificationCount}, {context}"
+          }
+        }
+      }
+    },
+    "required": []
+  }
+}
