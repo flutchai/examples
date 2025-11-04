@@ -3,18 +3,7 @@ import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { ModelInitializer } from "@flutchai/flutch-sdk";
 import { SystemMessage } from "@langchain/core/messages";
 import { CHART_OF_ACCOUNTS_SYSTEM_PROMPT } from "../../../../common/account-code-rules";
-
-/**
- * Simplified state for account management subgraph
- */
-interface AccountManagementState {
-  userId: string;
-  messages: any[];
-  output?: {
-    text: string;
-    attachments?: any[];
-  };
-}
+import { AccountManagementStateValues } from "../account-management.subgraph";
 
 /**
  * Format Response Node - formats tool results into user-friendly response
@@ -24,9 +13,9 @@ export class FormatResponseNode {
   constructor(private readonly modelInitializer: ModelInitializer) {}
 
   async execute(
-    state: AccountManagementState,
+    state: AccountManagementStateValues,
     config: LangGraphRunnableConfig<any>
-  ): Promise<Partial<AccountManagementState>> {
+  ): Promise<Partial<AccountManagementStateValues>> {
     const messages = state.messages || [];
 
     // Get LLM config from graphSettings

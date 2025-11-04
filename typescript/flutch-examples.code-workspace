@@ -1,0 +1,22 @@
+{
+  "folders": [
+    {
+      "path": "ledger",
+      "name": "Ledger Example"
+    },
+    {
+      "path": "react",
+      "name": "React Example"
+    },
+    {
+      "path": "simple",
+      "name": "Simple Example"
+    }
+  ],
+  "settings": {
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true
+    }
+  }
+}

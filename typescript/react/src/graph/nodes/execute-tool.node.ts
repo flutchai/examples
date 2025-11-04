@@ -11,7 +11,7 @@ import {
   ReactGraphSettings,
 } from "../../react.types";
 import { ReactGraphStateValues } from "../../react-graph.builder";
-import { McpRuntimeClient } from "../../clients";
+import { McpRuntimeHttpClient } from "@flutchai/flutch-sdk";
 
 type ToolMetadataInputSchema = ToolMetadata["inputSchema"];
 
@@ -19,7 +19,7 @@ type ToolMetadataInputSchema = ToolMetadata["inputSchema"];
 export class ExecuteToolNode {
   private readonly logger = new Logger(ExecuteToolNode.name);
 
-  constructor(private readonly mcpClient: McpRuntimeClient) {}
+  constructor(private readonly mcpClient: McpRuntimeHttpClient) {}
 
   async execute(
     state: ReactGraphStateValues,

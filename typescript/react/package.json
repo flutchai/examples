@@ -21,8 +21,10 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
   },
   "dependencies": {
-    "@flutchai/flutch-sdk": "^0.1.5",
+    "@flutchai/flutch-sdk": "file:../../../node-sdk",
+    "@langchain/core": "^1.0.2",
     "@langchain/langgraph": "^1.0.1",
+    "@langchain/langgraph-checkpoint": "^1.0.0",
     "@langchain/langgraph-checkpoint-mongodb": "^1.0.0",
     "@nestjs/axios": "^3.0.0",
     "@nestjs/common": "^10.0.0",
@@ -71,5 +73,6 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  }
+  },
+  "packageManager": "yarn@4.6.0+sha224.acd0786f07ffc6c933940eb65fc1d627131ddf5455bddcc295dc90fd"
 }

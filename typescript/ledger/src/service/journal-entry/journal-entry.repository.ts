@@ -60,7 +60,7 @@ export class JournalEntryRepository {
     return this.journalEntryModel
       .find({ journalEntryId: { $in: journalEntryIds } })
       .select("journalEntryId status description amount createdAt")
-      .lean()
+      .lean<JournalEntry[]>()
       .exec();
   }
 

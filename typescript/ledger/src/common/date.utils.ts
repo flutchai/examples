@@ -1,4 +1,4 @@
-import chrono from "chrono-node";
+import * as chrono from "chrono-node";
 
 export function parseDateWithTimezone(text: string, timezoneOffset = 0) {
   const reference = new Date();

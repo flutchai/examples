@@ -16,7 +16,7 @@ import {
   ToolMetadata,
 } from "../../react.types";
 import { ReactGraphStateValues } from "../../react-graph.builder";
-import { McpRuntimeClient } from "../../clients";
+import { McpRuntimeHttpClient } from "@flutchai/flutch-sdk";
 import { ENV_CONFIG } from "../../config/environment.config";
 import { LLMResult } from "@langchain/core/outputs";
 import { StreamChannel } from "@flutchai/flutch-sdk";
@@ -37,7 +37,7 @@ export class PlanAndSelectToolNode {
 
   constructor(
     private readonly modelInitializer: ModelInitializer,
-    private readonly mcpClient: McpRuntimeClient
+    private readonly mcpClient: McpRuntimeHttpClient
   ) {}
 
   // Note: Old prompt services (PlannerPromptService, PlanMaterializationService)
@@ -236,8 +236,8 @@ export class PlanAndSelectToolNode {
   private buildMessagesFromState(
     state: ReactGraphStateValues,
     systemPrompt: string
-  ) {
-    const messages = [new SystemMessage(systemPrompt)];
+  ): any[] {
+    const messages: any[] = [new SystemMessage(systemPrompt)];
 
     // Add user's original query if no messages exist yet
     if (!state.messages || state.messages.length === 0) {

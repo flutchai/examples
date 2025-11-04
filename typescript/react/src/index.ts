@@ -6,5 +6,4 @@ export * from "./state.model";
 export * from "./versions";
 export * from "./graph/nodes";
 export * from "./services";
-export * from "./clients";
 export * from "./react.tokens";

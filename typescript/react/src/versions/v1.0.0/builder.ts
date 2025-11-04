@@ -66,9 +66,9 @@ export class ReactGraphV1Builder
       ReactGraphStateValues,
       UpdateType<ReactGraphDefinition>,
       string,
-      ReactGraphInputValues,
-      ReactGraphStateValues,
-      ReactGraphConfigValues
+      any,
+      any,
+      any
     >(ReactGraphState);
 
     // Add all nodes

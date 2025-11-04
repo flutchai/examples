@@ -9,12 +9,12 @@ import {
   GraphEngineType,
   UniversalGraphModule,
 } from "@flutchai/flutch-sdk";
-import { LLMInitializer, ModelInitializer } from "@flutchai/flutch-sdk";
+import { ModelInitializer } from "@flutchai/flutch-sdk";
 
 import { ReactGraphTokens } from "./react.tokens";
 import { ReactGraphV1Builder } from "./versions";
 import * as Nodes from "./graph/nodes";
-import { McpRuntimeClient } from "./clients";
+import { McpRuntimeHttpClient } from "@flutchai/flutch-sdk";
 import { ToolCatalogClient } from "./services";
 // Note: PlannerPromptService and PlanMaterializationService are no longer needed
 // in the new ReAct pattern - prompts are handled by the new prompt system
@@ -47,9 +47,8 @@ const logger = new Logger("ReactGraphModule");
   ],
   controllers: [BaseGraphServiceController],
   providers: [
-    LLMInitializer,
     ModelInitializer,
-    McpRuntimeClient,
+    McpRuntimeHttpClient,
     ToolCatalogClient,
     // Note: PlannerPromptService and PlanMaterializationService removed
     // - new ReAct pattern uses simplified prompt system

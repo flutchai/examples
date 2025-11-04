@@ -7,18 +7,7 @@ import {
   CHART_OF_ACCOUNTS_SHORT,
   validateAccountCode,
 } from "../../../../common/account-code-rules";
-
-/**
- * Simplified state for account management subgraph
- */
-interface AccountManagementState {
-  userId: string;
-  messages: any[];
-  output?: {
-    text: string;
-    attachments?: any[];
-  };
-}
+import { AccountManagementStateValues } from "../account-management.subgraph";
 
 /**
  * Execute Tool Node - handles account management operations using LLM with tool binding
@@ -31,9 +20,9 @@ export class ExecuteToolNode {
   ) {}
 
   async execute(
-    state: AccountManagementState,
+    state: AccountManagementStateValues,
     config: LangGraphRunnableConfig<any>
-  ): Promise<Partial<AccountManagementState>> {
+  ): Promise<Partial<AccountManagementStateValues>> {
     const userId = state.userId;
     const messages = state.messages || [];
 
