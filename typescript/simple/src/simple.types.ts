@@ -1,64 +1,114 @@
 import { BaseMessage, AIMessage } from "@langchain/core/messages";
+import { Annotation } from "@langchain/langgraph";
+import type {
+  BaseChannel,
+  StateDefinition,
+  StateType,
+} from "@langchain/langgraph";
 
 /**
- * Type definitions for Simple graph
- * Graph-specific types that don't need to conform to a base interface
+ * Type definitions for Simple graph following the backend pattern
  */
 
-export interface SimpleStateValues {
+// Helper type for mapped channels
+type MappedChannels<T> = {
+  [K in keyof T]: BaseChannel<T[K], T[K]>;
+};
+
+// ============================================================================
+// State Definition
+// ============================================================================
+
+export interface SimpleGraphState {
   messages: BaseMessage[];
-  generation?: AIMessage;
-  output?: {
-    text: string;
-    attachments?: any[];
-    metadata?: Record<string, any>;
-  };
-  metadata?: Record<string, any>;
+  generation: AIMessage;
 }
 
-export interface SimpleInputValues {
+export type SimpleGraphStateDefinition = StateDefinition &
+  MappedChannels<SimpleGraphState>;
+
+export type SimpleGraphStateValues = StateType<SimpleGraphStateDefinition>;
+
+export const SimpleState = Annotation.Root<SimpleGraphStateDefinition>({
+  messages: Annotation<BaseMessage[]>({
+    reducer: (x, y) => x.concat(y),
+  }),
+  generation: Annotation<AIMessage>(),
+});
+
+// ============================================================================
+// Input Definition
+// ============================================================================
+
+export interface SimpleGraphInput {
   messages: BaseMessage[];
 }
 
-export interface SimpleConfigValues {
-  thread_id: string;
-  checkpoint_ns?: string;
-  checkpoint_id?: string;
-  metadata?: Record<string, any>;
-  graphSettings?: {
-    temperature?: number;
-    model?: string;
-    maxTokens?: number;
-    systemPrompt?: string;
-    enableReflection?: boolean;
-    reflectionDepth?: number;
-    [key: string]: any;
-  };
+export type SimpleGraphInputDefinition = StateDefinition &
+  MappedChannels<SimpleGraphInput>;
+
+export type SimpleInputValues = StateType<SimpleGraphInputDefinition>;
+
+export const SimpleGraphInvokeInput =
+  Annotation.Root<SimpleGraphInputDefinition>({
+    messages: Annotation<BaseMessage[]>({
+      reducer: (state: BaseMessage[], update: BaseMessage[]) => [
+        ...state,
+        ...update,
+      ],
+      default: () => [],
+    }),
+  });
+
+// ============================================================================
+// Config Definition
+// ============================================================================
+
+export interface SimpleGraphParams {
+  graphType: "flutch.simple::1.0.0";
+  systemPrompt: string;
+  modelId?: string;
+  temperature?: number;
+  maxTokens?: number;
+  tokenId?: string;
+  availableTools?: string[];
+  recursionLimit?: number;
 }
+
+export type SimpleGraphConfigDefinition = StateDefinition &
+  MappedChannels<SimpleGraphParams>;
+
+export type SimpleConfigValues = StateType<SimpleGraphConfigDefinition>;
+
+export const SimpleGraphConfig = Annotation.Root<SimpleGraphConfigDefinition>({
+  graphType: Annotation<"flutch.simple::1.0.0">(),
+  systemPrompt: Annotation<string>(),
+  modelId: Annotation<string>(),
+  temperature: Annotation<number>(),
+  maxTokens: Annotation<number>(),
+  tokenId: Annotation<string>(),
+  availableTools: Annotation<string[]>(),
+  recursionLimit: Annotation<number>(),
+});
+
+// ============================================================================
+// Output Definition
+// ============================================================================
 
 export interface SimpleOutputValues {
   messages: BaseMessage[];
-  metadata?: Record<string, any>;
 }
 
-/**
- * Graph settings from manifest
- */
-export interface SimpleGraphSettings {
-  temperature?: number;
-  model?: string;
-  maxTokens?: number;
-  systemPrompt?: string;
-}
+// ============================================================================
+// Compiled Graph Type
+// ============================================================================
 
-/**
- * Type for compiled Simple graph
- */
 export type SimpleCompiledGraph = any; // Using any for compatibility with LangGraph's complex types
 
-/**
- * Interface for Simple graph builders
- */
+// ============================================================================
+// Graph Builder Interface
+// ============================================================================
+
 export interface ISimpleGraphBuilder {
   readonly version: string;
   buildGraph(payload?: any): Promise<SimpleCompiledGraph>;

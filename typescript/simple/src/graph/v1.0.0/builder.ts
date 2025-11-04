@@ -3,17 +3,16 @@ import { AbstractGraphBuilder } from "@flutchai/flutch-sdk";
 import { IGraphRequestPayload, StreamChannel } from "@flutchai/flutch-sdk";
 import { MongoDBSaver } from "@langchain/langgraph-checkpoint-mongodb";
 import { StateGraph, START, END } from "@langchain/langgraph";
-import { SimpleState } from "../../state.model";
-import { SimpleTokens } from "../../simple.tokens";
 import {
+  SimpleState,
   SimpleInputValues,
   SimpleConfigValues,
   SimpleCompiledGraph,
   ISimpleGraphBuilder,
-  SimpleStateValues,
+  SimpleGraphStateValues,
+  SimpleGraphStateDefinition,
 } from "../../simple.types";
-import * as Nodes from "../../nodes";
-import * as path from "path";
+import * as Nodes from "./nodes";
 /**
  * Builder for Simple graph version 1.0.0
  * Basic implementation with single generate node
@@ -26,15 +25,17 @@ export class SimpleV1Builder
   readonly version = "1.0.0" as const;
 
   private readonly generateNode: Nodes.GenerateNode;
+  private readonly executeToolsNode: Nodes.ExecuteToolsNode;
 
   constructor(
     @Inject("CHECKPOINTER")
     private readonly checkpointer: MongoDBSaver,
-    @Inject(SimpleTokens.GENERATE_NODE)
-    generateNode: Nodes.GenerateNode
+    generateNode: Nodes.GenerateNode,
+    executeToolsNode: Nodes.ExecuteToolsNode
   ) {
     super();
     this.generateNode = generateNode;
+    this.executeToolsNode = executeToolsNode;
 
     // Manifest is now loaded automatically from root on first access
     this.logger.log("SimpleV1Builder initialized with new manifest system");
@@ -46,7 +47,7 @@ export class SimpleV1Builder
   async buildGraph(_payload?: any): Promise<SimpleCompiledGraph> {
     this.logger.debug("Building Simple graph v1.0.0 with MCP tools support");
 
-    const workflow = new StateGraph(SimpleState)
+    const workflow = new StateGraph<SimpleGraphStateDefinition>(SimpleState)
       .addNode(
         "output_generate",
         this.generateNode.execute.bind(this.generateNode),
@@ -56,7 +57,7 @@ export class SimpleV1Builder
           },
         }
       )
-      .addNode("tools", this.generateNode.executeTools.bind(this.generateNode));
+      .addNode("tools", this.executeToolsNode.execute.bind(this.executeToolsNode));
 
     // V1: Enhanced flow with tool support
     workflow.addEdge(START, "output_generate");
@@ -64,7 +65,7 @@ export class SimpleV1Builder
     // Conditional routing: if tool calls are present, go to tools node
     workflow.addConditionalEdges(
       "output_generate",
-      (state: SimpleStateValues) => {
+      (state: SimpleGraphStateValues) => {
         const lastMessage = state.messages[state.messages.length - 1];
         return (lastMessage as any)?.tool_calls?.length > 0 ? "tools" : END;
       },

@@ -3,19 +3,15 @@ import { HttpModule } from "@nestjs/axios";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import mongoose, { Connection } from "mongoose";
 import { MongoDBSaver } from "@langchain/langgraph-checkpoint-mongodb";
-import { SimpleV1Builder, SimpleV2Builder } from "./versions";
-import { SimpleTokens } from "./simple.tokens";
-import { LLMInitializer, ModelInitializer } from "@flutchai/flutch-sdk";
-import * as Nodes from "./nodes";
-import { McpRuntimeClient } from "./clients/mcp-runtime.client";
-import { ToolCatalogClient } from "./services/tool-catalog.client";
+import { SimpleV1Builder } from "./graph";
+import { ModelInitializer, McpRuntimeHttpClient } from "@flutchai/flutch-sdk";
+import * as Nodes from "./graph/v1.0.0/nodes";
 import {
   BaseGraphServiceController,
   BuilderRegistryService,
   UniversalGraphModule,
   GraphEngineType,
 } from "@flutchai/flutch-sdk";
-import { ENV_CONFIG } from "./config/environment.config";
 
 const logger = new Logger("SimpleModule");
 
@@ -40,10 +36,6 @@ const logger = new Logger("SimpleModule");
             {
               version: "1.0.0",
               builderClass: SimpleV1Builder,
-            },
-            {
-              version: "2.0.0",
-              builderClass: SimpleV2Builder,
               isDefault: true,
             },
           ],
@@ -54,63 +46,58 @@ const logger = new Logger("SimpleModule");
   ],
   controllers: [BaseGraphServiceController],
   providers: [
-    // LLM initialization (backwards compatibility)
-    LLMInitializer,
     // New model initializer
     ModelInitializer,
 
     // MCP Runtime Client
-    McpRuntimeClient,
-
-    // Tool Catalog Client
-    ToolCatalogClient,
+    McpRuntimeHttpClient,
 
     // Version builders
     SimpleV1Builder,
-    SimpleV2Builder,
 
     // Shared nodes (used by all versions)
-    {
-      provide: SimpleTokens.GENERATE_NODE,
-      useClass: Nodes.GenerateNode,
-    },
+    Nodes.GenerateNode,
+    Nodes.ExecuteToolsNode,
 
     // MongoDB connection
     {
       provide: "MONGO_CONNECTION",
-      useFactory: async (): Promise<Connection> => {
-        const mongoUri = ENV_CONFIG.database.mongoUri;
+      useFactory: async (configService: ConfigService): Promise<Connection> => {
+        const mongoUri = configService.get<string>("MONGODB_URI")!;
+        const dbName = configService.get<string>("MONGO_DB_NAME") || "simple-graph-dev";
         logger.log(
           `Connecting to MongoDB: ${mongoUri?.substring(0, 50) + "..."}`
         );
         try {
-          await mongoose.connect(mongoUri, {
-            dbName: ENV_CONFIG.database.dbName,
-          });
+          await mongoose.connect(mongoUri, { dbName });
           return mongoose.connection;
         } catch (error) {
           logger.error("Failed to connect to MongoDB", error as Error);
           throw error;
         }
       },
+      inject: [ConfigService],
     },
 
     // CHECKPOINTER - using MongoDB connection
     {
       provide: "CHECKPOINTER",
-      useFactory: async (connection: Connection) => {
-        // Get raw MongoClient from Mongoose connection
+      useFactory: async (
+        connection: Connection,
+        configService: ConfigService
+      ) => {
         const mongoClient = connection.getClient();
+        const dbName = configService.get<string>("MONGO_DB_NAME") || "simple-graph-dev";
 
         logger.log("Creating CHECKPOINTER for simple graph");
         return new MongoDBSaver({
           client: mongoClient,
-          dbName: ENV_CONFIG.database.dbName,
+          dbName,
           checkpointCollectionName: "checkpoints",
           checkpointWritesCollectionName: "checkpoint_writes",
         });
       },
-      inject: ["MONGO_CONNECTION"],
+      inject: ["MONGO_CONNECTION", ConfigService],
     },
   ],
   exports: [ConfigModule],
@@ -122,28 +109,22 @@ export class SimpleModule implements OnModuleInit {
    */
   constructor(
     private readonly simpleV1Builder: SimpleV1Builder,
-    private readonly simpleV2Builder: SimpleV2Builder,
     private readonly builderRegistry: BuilderRegistryService
   ) {}
 
   async onModuleInit() {
-    // Register the graph builders (following support graph pattern)
+    // Register the graph builder
     this.builderRegistry.registerBuilder(this.simpleV1Builder);
-    this.builderRegistry.registerBuilder(this.simpleV2Builder);
 
     logger.log(
       "Registered SimpleV1Builder with graph type: " +
         this.simpleV1Builder.graphType
-    );
-    logger.log(
-      "Registered SimpleV2Builder with graph type: " +
-        this.simpleV2Builder.graphType
     );
 
     logger.log("🚀 SIMPLE GRAPH SERVICE INITIALIZED");
     logger.log(
       "📋 Versioning: Automatic registration via UniversalGraphModule"
     );
-    logger.log("🔄 Available versions: 1.0.0, 2.0.0 (default)");
+    logger.log("🔄 Available version: 1.0.0 (default)");
   }
 }
