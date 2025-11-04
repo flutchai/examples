@@ -1244,7 +1244,7 @@ __metadata:
 
 "@flutchai/flutch-sdk@file:../../../node-sdk::locator=%40amelie%2Fgraph-simple%40workspace%3A.":
   version: 0.1.5
-  resolution: "@flutchai/flutch-sdk@file:../../../node-sdk#../../../node-sdk::hash=ac56ae&locator=%40amelie%2Fgraph-simple%40workspace%3A."
+  resolution: "@flutchai/flutch-sdk@file:../../../node-sdk#../../../node-sdk::hash=3fc345&locator=%40amelie%2Fgraph-simple%40workspace%3A."
   dependencies:
     "@langchain/anthropic": "npm:^0.3.33"
     "@langchain/azure-openai": "npm:^0.0.11"
@@ -1269,7 +1269,7 @@ __metadata:
     reflect-metadata: "npm:^0.2.0"
     rxjs: "npm:^7.8.1"
     zod: "npm:^3.22.4"
-  checksum: 10c0/b7b372c4c0dcdf85425d52874b4b85ade563c4d7b97b5f1de7c469dc80b5e90834d9d3e61b1927dded9d652ea07de0888e685ee2817409093ee07361de162d14
+  checksum: 10c0/7d0f1500d9357efa8c996f7967779d8fdf3535e70ba455efd7a1d02ae27d01e20466fc0f26615f322337dec6897d2aee4746ea869056ad835231edb6e0c9d535
   languageName: node
   linkType: hard
 
