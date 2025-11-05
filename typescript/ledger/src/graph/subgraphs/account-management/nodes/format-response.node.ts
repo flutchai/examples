@@ -14,7 +14,7 @@ export class FormatResponseNode {
 
   async execute(
     state: AccountManagementStateValues,
-    config: LangGraphRunnableConfig<any>
+    config: LangGraphRunnableConfig<any>,
   ): Promise<Partial<AccountManagementStateValues>> {
     const messages = state.messages || [];
 
@@ -45,14 +45,14 @@ Guidelines:
 - Present data in a readable format (tables, lists, etc.)
 - Be concise but informative
 - If there's an error, explain it clearly and suggest what to do next
-- When showing accounts, organize them by type and show the hierarchy (parent-child relationships)`
+- When showing accounts, organize them by type and show the hierarchy (parent-child relationships)`,
     );
 
     // Call LLM to format the response
     const response = await model.invoke([systemPrompt, ...messages], config);
 
     console.log(
-      `[FORMAT_RESPONSE] Formatted response: ${response.content.toString().substring(0, 100)}...`
+      `[FORMAT_RESPONSE] Formatted response: ${response.content.toString().substring(0, 100)}...`,
     );
 
     return {

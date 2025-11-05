@@ -163,7 +163,7 @@ describe("JournalEntryService", () => {
           if (accountCode === "3001")
             return Promise.resolve(equityAccount as any);
           return Promise.resolve(null);
-        }
+        },
       );
 
       journalEntryRepository.create.mockResolvedValue(mockJournalEntry as any);
@@ -172,20 +172,21 @@ describe("JournalEntryService", () => {
 
       expect(accountRepository.findByCode).toHaveBeenCalledWith(
         "1001",
-        "user-1"
+        "user-1",
       );
       expect(accountRepository.findByCode).toHaveBeenCalledWith(
         "3001",
-        "user-1"
+        "user-1",
       );
       expect(journalEntryRepository.create).toHaveBeenCalledWith({
         ...createDto,
         entries: expect.arrayContaining([
           expect.objectContaining({
             accountId: "account-id-1",
-            accountCode: "1001",
-            accountName: "Cash Account",
+            debitAmount: 1000,
+            creditAmount: 0,
             lineNumber: 1,
+            currency: Currency.USD,
           }),
         ]),
       });
@@ -207,7 +208,7 @@ describe("JournalEntryService", () => {
       };
 
       await expect(service.createJournalEntry(invalidDto)).rejects.toThrow(
-        BadRequestException
+        BadRequestException,
       );
     });
 
@@ -215,7 +216,7 @@ describe("JournalEntryService", () => {
       accountRepository.findByCode.mockResolvedValue(null);
 
       await expect(service.createJournalEntry(createDto)).rejects.toThrow(
-        "Account 1001 not found"
+        "Account 1001 not found",
       );
     });
   });
@@ -252,7 +253,7 @@ describe("JournalEntryService", () => {
       };
 
       journalEntryRepository.findByJournalEntryId.mockResolvedValue(
-        mockJournalEntry as any
+        mockJournalEntry as any,
       );
       accountRepository.findByCode.mockImplementation(
         (accountCode: string, userId: string) => {
@@ -261,17 +262,17 @@ describe("JournalEntryService", () => {
           if (accountCode === "3001")
             return Promise.resolve(equityAccount as any);
           return Promise.resolve(null);
-        }
+        },
       );
       journalEntryRepository.update.mockResolvedValue(updatedEntry as any);
 
       const result = await service.updateJournalEntry(
         "JE-2024-000001",
-        updateDto
+        updateDto,
       );
 
       expect(journalEntryRepository.findByJournalEntryId).toHaveBeenCalledWith(
-        "JE-2024-000001"
+        "JE-2024-000001",
       );
       expect(journalEntryRepository.update).toHaveBeenCalled();
       expect(result).toEqual(updatedEntry);
@@ -281,7 +282,7 @@ describe("JournalEntryService", () => {
       journalEntryRepository.findByJournalEntryId.mockResolvedValue(null);
 
       await expect(
-        service.updateJournalEntry("JE-2024-000001", updateDto)
+        service.updateJournalEntry("JE-2024-000001", updateDto),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -291,11 +292,11 @@ describe("JournalEntryService", () => {
         status: JournalEntryStatus.POSTED,
       };
       journalEntryRepository.findByJournalEntryId.mockResolvedValue(
-        postedEntry as any
+        postedEntry as any,
       );
 
       await expect(
-        service.updateJournalEntry("JE-2024-000001", updateDto)
+        service.updateJournalEntry("JE-2024-000001", updateDto),
       ).rejects.toThrow("Can only update draft journal entries");
     });
   });
@@ -303,7 +304,7 @@ describe("JournalEntryService", () => {
   describe("postJournalEntry", () => {
     it("should post journal entry successfully", async () => {
       journalEntryRepository.findByJournalEntryId.mockResolvedValue(
-        mockJournalEntry as any
+        mockJournalEntry as any,
       );
       accountRepository.findById
         .mockResolvedValueOnce(mockAccount as any)
@@ -324,7 +325,7 @@ describe("JournalEntryService", () => {
       expect(result.affectedAccounts).toContain("1001");
       expect(accountRepository.incrementBalance).toHaveBeenCalledTimes(2);
       expect(journalEntryRepository.post).toHaveBeenCalledWith(
-        "journal-entry-id"
+        "journal-entry-id",
       );
     });
 
@@ -343,7 +344,7 @@ describe("JournalEntryService", () => {
         status: JournalEntryStatus.POSTED,
       };
       journalEntryRepository.findByJournalEntryId.mockResolvedValue(
-        postedEntry as any
+        postedEntry as any,
       );
 
       const result = await service.postJournalEntry("JE-2024-000001");
@@ -358,7 +359,7 @@ describe("JournalEntryService", () => {
         validateEntry: () => ["Entry is not balanced"],
       };
       journalEntryRepository.findByJournalEntryId.mockResolvedValue(
-        invalidEntry as any
+        invalidEntry as any,
       );
       accountRepository.findById.mockResolvedValue(mockAccount as any);
 
@@ -409,25 +410,25 @@ describe("JournalEntryService", () => {
 
       const result = await service.reverseJournalEntry(
         "JE-2024-000001",
-        "Correction needed"
+        "Correction needed",
       );
 
       expect(result.success).toBe(true);
       expect(result.journalEntryId).toBe("JE-2024-000002");
       expect(journalEntryRepository.reverse).toHaveBeenCalledWith(
         "JE-2024-000001",
-        "Correction needed"
+        "Correction needed",
       );
     });
 
     it("should handle reversal errors", async () => {
       journalEntryRepository.reverse.mockRejectedValue(
-        new Error("Journal entry not found")
+        new Error("Journal entry not found"),
       );
 
       const result = await service.reverseJournalEntry(
         "JE-2024-000001",
-        "Correction"
+        "Correction",
       );
 
       expect(result.success).toBe(false);
@@ -471,7 +472,7 @@ describe("JournalEntryService", () => {
 
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain(
-        "Journal entry must have at least one line"
+        "Journal entry must have at least one line",
       );
     });
 
@@ -482,7 +483,7 @@ describe("JournalEntryService", () => {
 
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain(
-        "Journal entry must have at least two lines (debit and credit)"
+        "Journal entry must have at least two lines (debit and credit)",
       );
     });
 
@@ -510,7 +511,7 @@ describe("JournalEntryService", () => {
 
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain(
-        "Journal entry is not balanced: Debit=1000, Credit=500"
+        "Journal entry is not balanced: Debit=1000, Credit=500",
       );
     });
 
@@ -537,7 +538,7 @@ describe("JournalEntryService", () => {
 
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain(
-        "Line 1: Entry cannot have both debit and credit amounts"
+        "Line 1: Entry cannot have both debit and credit amounts",
       );
     });
 
@@ -556,13 +557,13 @@ describe("JournalEntryService", () => {
   describe("getJournalEntry", () => {
     it("should return journal entry", async () => {
       journalEntryRepository.findByJournalEntryId.mockResolvedValue(
-        mockJournalEntry as any
+        mockJournalEntry as any,
       );
 
       const result = await service.getJournalEntry("JE-2024-000001");
 
       expect(journalEntryRepository.findByJournalEntryId).toHaveBeenCalledWith(
-        "JE-2024-000001"
+        "JE-2024-000001",
       );
       expect(result).toEqual(mockJournalEntry);
     });
@@ -571,7 +572,7 @@ describe("JournalEntryService", () => {
       journalEntryRepository.findByJournalEntryId.mockResolvedValue(null);
 
       await expect(service.getJournalEntry("JE-2024-000001")).rejects.toThrow(
-        NotFoundException
+        NotFoundException,
       );
     });
   });
@@ -587,7 +588,7 @@ describe("JournalEntryService", () => {
         "user-1",
         undefined,
         50,
-        0
+        0,
       );
       expect(result).toEqual(entries);
     });
@@ -600,14 +601,14 @@ describe("JournalEntryService", () => {
         "user-1",
         JournalEntryStatus.DRAFT,
         10,
-        5
+        5,
       );
 
       expect(journalEntryRepository.findByUser).toHaveBeenCalledWith(
         "user-1",
         JournalEntryStatus.DRAFT,
         10,
-        5
+        5,
       );
       expect(result).toEqual(entries);
     });
@@ -624,7 +625,7 @@ describe("JournalEntryService", () => {
         "user-1",
         "1001",
         undefined,
-        undefined
+        undefined,
       );
       expect(result).toEqual(entries);
     });
@@ -637,7 +638,7 @@ describe("JournalEntryService", () => {
       const result = await service.getDraftEntriesCount("user-1");
 
       expect(journalEntryRepository.getDraftCount).toHaveBeenCalledWith(
-        "user-1"
+        "user-1",
       );
       expect(result).toBe(5);
     });
@@ -651,7 +652,7 @@ describe("JournalEntryService", () => {
       const result = await service.getJournalEntriesByReference("REF-001");
 
       expect(journalEntryRepository.findByReference).toHaveBeenCalledWith(
-        "REF-001"
+        "REF-001",
       );
       expect(result).toEqual(entries);
     });
@@ -667,13 +668,13 @@ describe("JournalEntryService", () => {
       const result = await service.getJournalEntriesInDateRange(
         "user-1",
         fromDate,
-        toDate
+        toDate,
       );
 
       expect(journalEntryRepository.findByDateRange).toHaveBeenCalledWith(
         "user-1",
         fromDate,
-        toDate
+        toDate,
       );
       expect(result).toEqual(entries);
     });

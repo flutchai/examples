@@ -191,7 +191,7 @@ export class TestDataFactory {
   }
 
   static createValidTransactionDto(
-    type: TransactionType = TransactionType.TRANSACTION
+    type: TransactionType = TransactionType.TRANSACTION,
   ) {
     return {
       userId: "user-1",
@@ -261,7 +261,7 @@ export class TestDataFactory {
 
   static createValidationResult(
     isValid: boolean = true,
-    errors: string[] = []
+    errors: string[] = [],
   ) {
     return {
       isValid,
@@ -451,7 +451,7 @@ export const TestHelpers = {
   isApproximatelyEqual(
     a: number,
     b: number,
-    tolerance: number = 0.01
+    tolerance: number = 0.01,
   ): boolean {
     return Math.abs(a - b) < tolerance;
   },
@@ -460,22 +460,22 @@ export const TestHelpers = {
    * Wait for a specified number of milliseconds (for testing async operations)
    */
   async wait(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   },
 
   /**
    * Validate journal entry balance
    */
   isJournalEntryBalanced(
-    entries: Array<{ debitAmount: number; creditAmount: number }>
+    entries: Array<{ debitAmount: number; creditAmount: number }>,
   ): boolean {
     const totalDebit = entries.reduce(
       (sum, entry) => sum + entry.debitAmount,
-      0
+      0,
     );
     const totalCredit = entries.reduce(
       (sum, entry) => sum + entry.creditAmount,
-      0
+      0,
     );
     return this.isApproximatelyEqual(totalDebit, totalCredit);
   },

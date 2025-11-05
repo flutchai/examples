@@ -9,7 +9,7 @@ const originalLog = console.log;
 beforeAll(() => {
   // Suppress console output during tests unless VERBOSE_TESTS is set
   if (!process.env.VERBOSE_TESTS) {
-    console.error = jest.fn(message => {
+    console.error = jest.fn((message) => {
       // Still show actual errors, but suppress expected test errors
       if (typeof message === "string" && message.includes("Test error")) {
         return;
@@ -41,7 +41,7 @@ global.testUtils = {
   }),
 
   // Helper to wait for async operations
-  waitFor: (ms: number) => new Promise(resolve => setTimeout(resolve, ms)),
+  waitFor: (ms: number) => new Promise((resolve) => setTimeout(resolve, ms)),
 
   // Helper to create mock logger
   createMockLogger: () => ({
@@ -58,7 +58,7 @@ expect.extend({
   toBeApproximatelyEqual(
     received: number,
     expected: number,
-    tolerance: number = 0.01
+    tolerance: number = 0.01,
   ) {
     const pass = Math.abs(received - expected) < tolerance;
     if (pass) {

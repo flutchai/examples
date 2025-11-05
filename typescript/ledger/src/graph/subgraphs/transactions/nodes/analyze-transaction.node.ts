@@ -62,7 +62,7 @@ export class AnalyzeTransactionNode {
 
   async execute(
     state: TransactionStateValues,
-    config: LangGraphRunnableConfig<LedgerGraphConfigValues>
+    config: LangGraphRunnableConfig<LedgerGraphConfigValues>,
   ): Promise<Partial<TransactionStateValues>> {
     this.logger.log("Analyzing transaction(s) from user message");
 
@@ -71,24 +71,24 @@ export class AnalyzeTransactionNode {
       const analysis = await this.analyzeTransactions(
         state.description,
         state.messages || [],
-        config
+        config,
       );
 
       const isBatch = analysis.transactions.length > 1;
       this.logger.log(
         `Parsed ${analysis.transactions.length} transaction(s), ` +
-          `batch: ${isBatch}, confidence: ${analysis.confidence}`
+          `batch: ${isBatch}, confidence: ${analysis.confidence}`,
       );
 
       // Convert to ParsedTransaction format
       const parsedTransactions: ParsedTransaction[] = analysis.transactions.map(
-        tx => ({
+        (tx) => ({
           description: tx.description,
           amount: tx.amount,
           date: tx.date || undefined,
           currency: tx.currency || "USD",
           tags: tx.tags || [],
-        })
+        }),
       );
 
       return {
@@ -111,7 +111,7 @@ export class AnalyzeTransactionNode {
   private async analyzeTransactions(
     description: string,
     messages: any[],
-    config: LangGraphRunnableConfig<LedgerGraphConfigValues>
+    config: LangGraphRunnableConfig<LedgerGraphConfigValues>,
   ): Promise<TransactionAnalysis> {
     // Get LLM config
     const analyzeConfig =
@@ -149,13 +149,13 @@ export class AnalyzeTransactionNode {
       : SystemPrompts.getTransactionAnalysisPrompt();
 
     this.logger.debug(
-      `Using ${likelyBatch ? "batch" : "single"} analysis prompt`
+      `Using ${likelyBatch ? "batch" : "single"} analysis prompt`,
     );
 
     // Invoke LLM
     const result = await model.invoke(
       [new SystemMessage(systemPrompt), ...messages],
-      config
+      config,
     );
 
     if (!result || !result.parsed) {
@@ -180,7 +180,7 @@ export class AnalyzeTransactionNode {
       }
 
       throw new Error(
-        "Failed to parse transactions and fallback extraction failed"
+        "Failed to parse transactions and fallback extraction failed",
       );
     }
 

@@ -24,7 +24,7 @@ export class SystemPrompts {
 
   private static replacePlaceholders(
     template: string,
-    config: PromptConfig
+    config: PromptConfig,
   ): string {
     let result = template;
 
@@ -107,14 +107,14 @@ export class SystemPrompts {
       accountType: string;
       balance?: number;
       currency?: string;
-    }>
+    }>,
   ): string {
     if (!accounts || accounts.length === 0) {
       return "No existing accounts";
     }
 
     return accounts
-      .map(acc => {
+      .map((acc) => {
         const balance =
           acc.balance !== undefined
             ? ` (Balance: ${acc.balance} ${acc.currency || "USD"})`
@@ -133,7 +133,7 @@ export class SystemPrompts {
       amount: number;
       currency?: string;
       date?: string;
-    }>
+    }>,
   ): string {
     return transactions
       .map((tx, idx) => {
@@ -151,10 +151,10 @@ export class SystemPrompts {
       code: string;
       name: string;
       type: string;
-    }>
+    }>,
   ): string {
     return accounts
-      .map(acc => `- ${acc.code}: ${acc.name} [${acc.type}]`)
+      .map((acc) => `- ${acc.code}: ${acc.name} [${acc.type}]`)
       .join("\n");
   }
 }

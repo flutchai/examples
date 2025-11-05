@@ -2,7 +2,10 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ToolMessage } from "@langchain/core/messages";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { McpRuntimeHttpClient } from "@flutchai/flutch-sdk";
-import { SimpleGraphStateValues, SimpleConfigValues } from "../../../simple.types";
+import {
+  SimpleGraphStateValues,
+  SimpleConfigValues,
+} from "../../../simple.types";
 
 /**
  * Execute Tools node for Simple graph
@@ -16,7 +19,7 @@ export class ExecuteToolsNode {
 
   async execute(
     state: SimpleGraphStateValues,
-    config?: LangGraphRunnableConfig<SimpleConfigValues>
+    config?: LangGraphRunnableConfig<SimpleConfigValues>,
   ): Promise<Partial<SimpleGraphStateValues>> {
     this.logger.debug("Executing MCP tools");
 
@@ -48,7 +51,7 @@ export class ExecuteToolsNode {
       for (const toolCall of toolCalls) {
         try {
           this.logger.debug(
-            `Executing tool: ${toolCall.name} with args: ${JSON.stringify(toolCall.args)}`
+            `Executing tool: ${toolCall.name} with args: ${JSON.stringify(toolCall.args)}`,
           );
 
           // Build execution context with tool config
@@ -59,7 +62,7 @@ export class ExecuteToolsNode {
           const result = await this.mcpClient.executeTool(
             toolCall.name,
             toolCall.args,
-            context
+            context,
           );
 
           // Create tool result message
@@ -76,7 +79,7 @@ export class ExecuteToolsNode {
         } catch (toolError) {
           this.logger.error(
             `Error executing tool ${toolCall.name}:`,
-            toolError
+            toolError,
           );
 
           // Create error result message

@@ -40,13 +40,13 @@ export class LedgerV1Builder extends AbstractGraphBuilder<"1.0.0"> {
     private readonly accountService: AccountService,
     private readonly transactionService: TransactionService,
     private readonly journalEntryService: JournalEntryService,
-    private readonly pendingAccountPlanService: PendingAccountPlanService
+    private readonly pendingAccountPlanService: PendingAccountPlanService,
   ) {
     super();
   }
 
   async buildGraph(
-    _payload?: IGraphRequestPayload
+    _payload?: IGraphRequestPayload,
   ): Promise<LedgerGraphCompiledGraph> {
     const transactionsGraph = await this.transactionsSubgraph.build();
     const accountManagementGraph = await this.accountManagementSubgraph.build();
@@ -65,7 +65,7 @@ export class LedgerV1Builder extends AbstractGraphBuilder<"1.0.0"> {
 
     // Router: LLM-based routing to determine user intent
     workflow.addConditionalEdges(START, (state, config) =>
-      this.routeIntent.route(state, config as any)
+      this.routeIntent.route(state, config as any),
     );
 
     // Each subgraph completes and ends the workflow
@@ -80,7 +80,7 @@ export class LedgerV1Builder extends AbstractGraphBuilder<"1.0.0"> {
   }
 
   async prepareConfig(
-    payload: IGraphRequestPayload & { ledgerData?: any }
+    payload: IGraphRequestPayload & { ledgerData?: any },
   ): Promise<{
     input: LedgerGraphInputValues;
     configurable: LedgerGraphConfigValues;

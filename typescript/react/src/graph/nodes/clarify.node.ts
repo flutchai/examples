@@ -22,7 +22,7 @@ export class ClarifyNode {
 
   async execute(
     state: ReactGraphStateValues,
-    config?: LangGraphRunnableConfig<ReactGraphConfigValues>
+    config?: LangGraphRunnableConfig<ReactGraphConfigValues>,
   ): Promise<Partial<ReactGraphStateValues>> {
     const graphSettings: ReactGraphSettings =
       (config?.configurable?.graphSettings as ReactGraphSettings) || {};
@@ -91,7 +91,7 @@ export class ClarifyNode {
 
       const aiMessage = await clarifyModel.invoke(
         [new SystemMessage(prompt.system), new HumanMessage(prompt.human)],
-        config
+        config,
       );
 
       const generatedText = this.extractMessageText(aiMessage);
@@ -140,7 +140,7 @@ export class ClarifyNode {
   private buildClarifyPrompt(
     state: ReactGraphStateValues,
     plan: ClarifyPlanAction,
-    systemPrompt: string
+    systemPrompt: string,
   ): { system: string; human: string } {
     const system =
       systemPrompt ||

@@ -56,7 +56,7 @@ export class PlanMaterializationService {
     plannerResponse: PlannerResponse | null,
     shortlist: ToolMetadata[],
     filteredTools: ToolMetadata[],
-    invocationHashes: Set<string>
+    invocationHashes: Set<string>,
   ): PlanAction {
     // Handle null/empty response
     if (!plannerResponse) {
@@ -70,7 +70,7 @@ export class PlanMaterializationService {
           plannerResponse,
           shortlist,
           filteredTools,
-          invocationHashes
+          invocationHashes,
         );
       case "answer":
         return this.materializeAnswerPlan(plannerResponse);
@@ -78,7 +78,7 @@ export class PlanMaterializationService {
         return this.materializeClarifyPlan(plannerResponse);
       default:
         return this.createFallbackAnswerPlan(
-          `Unknown planner response type: ${(plannerResponse as any).type}`
+          `Unknown planner response type: ${(plannerResponse as any).type}`,
         );
     }
   }
@@ -90,12 +90,12 @@ export class PlanMaterializationService {
     plannerResponse: PlannerResponse,
     shortlist: ToolMetadata[],
     filteredTools: ToolMetadata[],
-    invocationHashes: Set<string>
+    invocationHashes: Set<string>,
   ): PlanAction {
     // Validate tool name provided
     if (!plannerResponse.tool) {
       return this.createFallbackAnswerPlan(
-        "Planner did not specify a tool name"
+        "Planner did not specify a tool name",
       );
     }
 
@@ -103,12 +103,12 @@ export class PlanMaterializationService {
     const toolMeta = this.findToolMetadata(
       plannerResponse.tool,
       shortlist,
-      filteredTools
+      filteredTools,
     );
 
     if (!toolMeta) {
       return this.createFallbackAnswerPlan(
-        `Planner suggested unavailable tool: ${plannerResponse.tool}`
+        `Planner suggested unavailable tool: ${plannerResponse.tool}`,
       );
     }
 
@@ -119,7 +119,7 @@ export class PlanMaterializationService {
 
       if (invocationHashes.has(invocationHash)) {
         return this.createFallbackAnswerPlan(
-          "Duplicate tool invocation prevented"
+          "Duplicate tool invocation prevented",
         );
       }
     }
@@ -191,16 +191,16 @@ export class PlanMaterializationService {
   private findToolMetadata(
     toolName: string,
     shortlist: ToolMetadata[],
-    filteredTools: ToolMetadata[]
+    filteredTools: ToolMetadata[],
   ): ToolMetadata | null {
     // Check shortlist first (higher priority)
-    const shortlistTool = shortlist.find(tool => tool.name === toolName);
+    const shortlistTool = shortlist.find((tool) => tool.name === toolName);
     if (shortlistTool) {
       return shortlistTool;
     }
 
     // Fall back to filtered tools
-    return filteredTools.find(tool => tool.name === toolName) || null;
+    return filteredTools.find((tool) => tool.name === toolName) || null;
   }
 
   /**
@@ -208,7 +208,7 @@ export class PlanMaterializationService {
    */
   private computeInvocationHash(
     tool: string,
-    args: Record<string, any>
+    args: Record<string, any>,
   ): string {
     return `${tool}::${JSON.stringify(args, Object.keys(args).sort())}`;
   }

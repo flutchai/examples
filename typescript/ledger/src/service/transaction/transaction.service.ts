@@ -16,26 +16,26 @@ export class TransactionService {
 
   constructor(
     private readonly accountService: AccountService,
-    private readonly journalEntryService: JournalEntryService
+    private readonly journalEntryService: JournalEntryService,
   ) {}
 
   async processTransaction(
-    dto: CreateTransactionDto
+    dto: CreateTransactionDto,
   ): Promise<TransactionResult> {
     this.logger.debug(
-      `Processing ${dto.transactionType} transaction for user: ${dto.userId}`
+      `Processing ${dto.transactionType} transaction for user: ${dto.userId}`,
     );
 
     try {
       // Ensure default accounts exist
       const defaultAccounts = await this.accountService.setupDefaultAccounts(
-        dto.userId
+        dto.userId,
       );
 
       // Generate journal entry based on transaction type
       const journalEntryLines = await this.generateJournalEntryLines(
         dto,
-        defaultAccounts
+        defaultAccounts,
       );
 
       // Create journal entry
@@ -49,7 +49,7 @@ export class TransactionService {
 
       // Post the journal entry to update account balances
       const postResult = await this.journalEntryService.postJournalEntry(
-        journalEntry.journalEntryId
+        journalEntry.journalEntryId,
       );
 
       if (!postResult.success) {
@@ -78,11 +78,11 @@ export class TransactionService {
 
   private async generateJournalEntryLines(
     dto: CreateTransactionDto,
-    defaultAccounts: any
+    defaultAccounts: any,
   ): Promise<JournalEntryLineDto[]> {
     // LEGACY CODE - This service is deprecated. Use JournalEntryService + AccountIntelligenceService instead.
     throw new Error(
-      "TransactionService is deprecated. Use JournalEntryService + AccountIntelligenceService for new transactions."
+      "TransactionService is deprecated. Use JournalEntryService + AccountIntelligenceService for new transactions.",
     );
 
     /* COMMENTED OUT - OLD TRANSACTION TYPE LOGIC
@@ -231,7 +231,7 @@ export class TransactionService {
   async getTransactionSummary(
     userId: string,
     fromDate?: Date,
-    toDate?: Date
+    toDate?: Date,
   ): Promise<{
     totalDeposits: number;
     totalWithdrawals: number;
@@ -248,7 +248,7 @@ export class TransactionService {
     const entries = await this.journalEntryService.getJournalEntriesInDateRange(
       userId,
       startDate,
-      endDate
+      endDate,
     );
 
     let totalDeposits = 0;
@@ -265,18 +265,18 @@ export class TransactionService {
       // Analyze journal entry to determine transaction type
       // Access accountCode via populated accountId
       const cashEntries = entry.entries.filter(
-        line =>
+        (line) =>
           (line.accountId as any)?.accountCode ===
-          defaultAccounts.cash.accountCode
+          defaultAccounts.cash.accountCode,
       );
 
       for (const cashEntry of cashEntries) {
         if (cashEntry.debitAmount > 0) {
           // Cash increase - could be deposit or revenue
           const otherEntry = entry.entries.find(
-            line =>
+            (line) =>
               (line.accountId as any)?.accountCode !==
-              defaultAccounts.cash.accountCode
+              defaultAccounts.cash.accountCode,
           );
 
           if (
@@ -295,9 +295,9 @@ export class TransactionService {
         } else if (cashEntry.creditAmount > 0) {
           // Cash decrease - could be withdrawal or expense
           const otherEntry = entry.entries.find(
-            line =>
+            (line) =>
               (line.accountId as any)?.accountCode !==
-              defaultAccounts.cash.accountCode
+              defaultAccounts.cash.accountCode,
           );
 
           if (
@@ -347,11 +347,11 @@ export class TransactionService {
     const entries = await this.journalEntryService.getJournalEntriesInDateRange(
       userId,
       startDate,
-      endDate
+      endDate,
     );
 
     // Convert journal entries to transaction format
-    const transactions = entries.map(entry => {
+    const transactions = entries.map((entry) => {
       // Determine transaction type based on entry patterns
       let type = "UNKNOWN";
       let amount = 0;
@@ -366,13 +366,14 @@ export class TransactionService {
       // Analyze entries to determine transaction type
       // Access accountCode via populated accountId
       const cashEntry = entry.entries.find(
-        line => (line.accountId as any)?.accountCode === defaultAccounts.cash
+        (line) => (line.accountId as any)?.accountCode === defaultAccounts.cash,
       );
       if (cashEntry) {
         amount = cashEntry.debitAmount || cashEntry.creditAmount;
 
         const otherEntry = entry.entries.find(
-          line => (line.accountId as any)?.accountCode !== defaultAccounts.cash
+          (line) =>
+            (line.accountId as any)?.accountCode !== defaultAccounts.cash,
         );
         if (otherEntry) {
           const otherAccountCode = (otherEntry.accountId as any)?.accountCode;
@@ -400,7 +401,7 @@ export class TransactionService {
         type,
         amount,
         status: entry.status,
-        entries: entry.entries.map(line => ({
+        entries: entry.entries.map((line) => ({
           accountCode: (line.accountId as any)?.accountCode,
           accountName: (line.accountId as any)?.accountName,
           description: line.description,
@@ -415,19 +416,19 @@ export class TransactionService {
 
     if (transactionType) {
       filteredTransactions = filteredTransactions.filter(
-        t => t.type.toLowerCase() === transactionType.toLowerCase()
+        (t) => t.type.toLowerCase() === transactionType.toLowerCase(),
       );
     }
 
     if (minAmount !== undefined) {
       filteredTransactions = filteredTransactions.filter(
-        t => t.amount >= minAmount
+        (t) => t.amount >= minAmount,
       );
     }
 
     if (maxAmount !== undefined) {
       filteredTransactions = filteredTransactions.filter(
-        t => t.amount <= maxAmount
+        (t) => t.amount <= maxAmount,
       );
     }
 
@@ -438,11 +439,11 @@ export class TransactionService {
   }
 
   async validateTransaction(
-    dto: CreateTransactionDto
+    dto: CreateTransactionDto,
   ): Promise<{ isValid: boolean; errors: string[] }> {
     // LEGACY CODE - This service is deprecated
     throw new Error(
-      "TransactionService.validateTransaction is deprecated. Use JournalEntryService for validation."
+      "TransactionService.validateTransaction is deprecated. Use JournalEntryService for validation.",
     );
   }
 }

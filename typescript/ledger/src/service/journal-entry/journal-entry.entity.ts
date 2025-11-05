@@ -123,11 +123,11 @@ export class JournalEntry extends Document {
   calculateTotals(): { totalDebit: number; totalCredit: number } {
     const totalDebit = this.entries.reduce(
       (sum, entry) => sum + entry.debitAmount,
-      0
+      0,
     );
     const totalCredit = this.entries.reduce(
       (sum, entry) => sum + entry.creditAmount,
-      0
+      0,
     );
     return { totalDebit, totalCredit };
   }
@@ -141,18 +141,18 @@ export class JournalEntry extends Document {
 
     if (this.entries.length === 1) {
       errors.push(
-        "Journal entry must have at least two lines (debit and credit)"
+        "Journal entry must have at least two lines (debit and credit)",
       );
     }
 
     if (!this.isBalanced) {
       errors.push(
-        `Journal entry is not balanced: Debit=${this.totalDebit}, Credit=${this.totalCredit}`
+        `Journal entry is not balanced: Debit=${this.totalDebit}, Credit=${this.totalCredit}`,
       );
     }
 
     // Check for duplicate line numbers
-    const lineNumbers = this.entries.map(e => e.lineNumber);
+    const lineNumbers = this.entries.map((e) => e.lineNumber);
     const uniqueLineNumbers = new Set(lineNumbers);
     if (lineNumbers.length !== uniqueLineNumbers.size) {
       errors.push("Duplicate line numbers found");
@@ -162,12 +162,12 @@ export class JournalEntry extends Document {
     this.entries.forEach((entry, index) => {
       if (entry.debitAmount > 0 && entry.creditAmount > 0) {
         errors.push(
-          `Line ${index + 1}: Entry cannot have both debit and credit amounts`
+          `Line ${index + 1}: Entry cannot have both debit and credit amounts`,
         );
       }
       if (entry.debitAmount === 0 && entry.creditAmount === 0) {
         errors.push(
-          `Line ${index + 1}: Entry must have either debit or credit amount`
+          `Line ${index + 1}: Entry must have either debit or credit amount`,
         );
       }
       if (entry.debitAmount < 0 || entry.creditAmount < 0) {

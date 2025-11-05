@@ -22,7 +22,7 @@ export class RouteIntentNode {
    */
   async route(
     state: LedgerGraphStateValues,
-    config: LangGraphRunnableConfig<LedgerGraphConfigValues>
+    config: LangGraphRunnableConfig<LedgerGraphConfigValues>,
   ): Promise<"account_management" | "transactions" | "analytics"> {
     const description = state.input?.description || "";
 
@@ -81,7 +81,7 @@ Respond with ONLY ONE WORD - either "account_management", "transactions", or "an
     try {
       const response = await model.invoke(
         [{ role: "user", content: routingPrompt }],
-        config
+        config,
       );
 
       const route = response.content.toString().toLowerCase().trim();

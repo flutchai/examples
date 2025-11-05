@@ -31,7 +31,7 @@ export class SimpleV1Builder
     @Inject("CHECKPOINTER")
     private readonly checkpointer: MongoDBSaver,
     generateNode: Nodes.GenerateNode,
-    executeToolsNode: Nodes.ExecuteToolsNode
+    executeToolsNode: Nodes.ExecuteToolsNode,
   ) {
     super();
     this.generateNode = generateNode;
@@ -55,9 +55,12 @@ export class SimpleV1Builder
           metadata: {
             stream_channel: StreamChannel.TEXT,
           },
-        }
+        },
       )
-      .addNode("tools", this.executeToolsNode.execute.bind(this.executeToolsNode));
+      .addNode(
+        "tools",
+        this.executeToolsNode.execute.bind(this.executeToolsNode),
+      );
 
     // V1: Enhanced flow with tool support
     workflow.addEdge(START, "output_generate");
@@ -72,7 +75,7 @@ export class SimpleV1Builder
       {
         tools: "tools",
         [END]: END,
-      }
+      },
     );
 
     // After tools execution, continue generation

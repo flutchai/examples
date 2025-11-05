@@ -9,7 +9,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@amelie/graph-ledger@workspace:."
   dependencies:
-    "@flutchai/flutch-sdk": "file:../../../node-sdk"
+    "@flutchai/flutch-sdk": "npm:^0.1.6"
     "@langchain/core": "npm:^1.0.2"
     "@langchain/langgraph": "npm:^1.0.1"
     "@langchain/langgraph-checkpoint": "npm:^1.0.0"
@@ -1243,9 +1243,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@flutchai/flutch-sdk@file:../../../node-sdk::locator=%40amelie%2Fgraph-ledger%40workspace%3A.":
-  version: 0.1.5
-  resolution: "@flutchai/flutch-sdk@file:../../../node-sdk#../../../node-sdk::hash=c45eac&locator=%40amelie%2Fgraph-ledger%40workspace%3A."
+"@flutchai/flutch-sdk@npm:^0.1.6":
+  version: 0.1.6
+  resolution: "@flutchai/flutch-sdk@npm:0.1.6"
   dependencies:
     "@langchain/anthropic": "npm:^0.3.33"
     "@langchain/azure-openai": "npm:^0.0.11"
@@ -1272,7 +1272,7 @@ __metadata:
     reflect-metadata: "npm:^0.2.0"
     rxjs: "npm:^7.8.1"
     zod: "npm:^3.22.4"
-  checksum: 10c0/69b83751b7540aae267fa2ba8218697aa47812b9810849c90771d48937bab974907e82381bf07d56ddef8472c64f9f679261a36df21f0a8fc6d71a35a1eeb379
+  checksum: 10c0/338ed82f716fa751e111b26b594c5197a5fba8644674f8e841077d26744577dbe89c118e5f8248b142fbf131556f594a6970ce7c2d833f408b367d68ef30efec
   languageName: node
   linkType: hard
 

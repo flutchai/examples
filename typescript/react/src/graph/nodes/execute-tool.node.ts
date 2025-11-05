@@ -23,7 +23,7 @@ export class ExecuteToolNode {
 
   async execute(
     state: ReactGraphStateValues,
-    config?: LangGraphRunnableConfig<ReactGraphConfigValues>
+    config?: LangGraphRunnableConfig<ReactGraphConfigValues>,
   ): Promise<Partial<ReactGraphStateValues>> {
     const pendingCalls: PendingToolCall[] = state.pendingToolCalls ?? [];
 
@@ -53,11 +53,11 @@ export class ExecuteToolNode {
       | ReactGraphConfigValues
       | undefined;
     const allowedToolConfigMap = this.buildToolConfigMap(
-      configurable?.graphSettings?.allowedTools
+      configurable?.graphSettings?.allowedTools,
     );
 
     const metadataCache = new Map<string, ToolMetadata>(
-      (state.availableTools ?? []).map(tool => [tool.name, tool])
+      (state.availableTools ?? []).map((tool) => [tool.name, tool]),
     );
 
     let runtimeMetadataMap: Map<string, ToolMetadata> | null = null;
@@ -71,12 +71,12 @@ export class ExecuteToolNode {
       try {
         const runtimeTools = await this.mcpClient.getTools();
         runtimeMetadataMap = new Map(
-          runtimeTools.map(tool => [tool.name, this.toToolMetadata(tool)])
+          runtimeTools.map((tool) => [tool.name, this.toToolMetadata(tool)]),
         );
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         this.logger.warn(
-          `Failed to fetch tool metadata from MCP runtime: ${message}`
+          `Failed to fetch tool metadata from MCP runtime: ${message}`,
         );
         runtimeMetadataMap = new Map();
       }
@@ -85,7 +85,7 @@ export class ExecuteToolNode {
     };
 
     const resolveToolMetadata = async (
-      toolName: string
+      toolName: string,
     ): Promise<ToolMetadata | null> => {
       const cached = metadataCache.get(toolName);
       if (cached) {
@@ -129,7 +129,7 @@ export class ExecuteToolNode {
             tool_call_id: call.id,
             name: call.name,
             content: JSON.stringify({ error: observation.error }),
-          })
+          }),
         );
         lastError = observation.error;
         continue;
@@ -140,7 +140,7 @@ export class ExecuteToolNode {
 
       const { sanitizedArgs, issues } = this.sanitizeArgs(
         toolMeta.inputSchema,
-        mergedArgs
+        mergedArgs,
       );
 
       if (remainingBudget <= 1 && typeof sanitizedArgs.topK === "number") {
@@ -149,7 +149,7 @@ export class ExecuteToolNode {
 
       if (issues.length) {
         this.logger.error(
-          `🚨 [ExecuteToolNode] Tool ${call.name} argument validation failed: ${issues.join("; ")}`
+          `🚨 [ExecuteToolNode] Tool ${call.name} argument validation failed: ${issues.join("; ")}`,
         );
         const observation: ToolObservation = {
           success: false,
@@ -168,7 +168,7 @@ export class ExecuteToolNode {
             tool_call_id: call.id,
             name: call.name,
             content: JSON.stringify({ error: observation.error }),
-          })
+          }),
         );
         lastError = observation.error;
         continue;
@@ -176,7 +176,7 @@ export class ExecuteToolNode {
 
       const invocationHash = this.computeInvocationHash(
         call.name,
-        sanitizedArgs
+        sanitizedArgs,
       );
       if (
         knownHashes.has(invocationHash) ||
@@ -184,7 +184,7 @@ export class ExecuteToolNode {
       ) {
         duplicateSuppressed += 1;
         this.logger.warn(
-          `Duplicate invocation prevented for ${call.name} (${invocationHash})`
+          `Duplicate invocation prevented for ${call.name} (${invocationHash})`,
         );
         const observation: ToolObservation = {
           success: false,
@@ -203,7 +203,7 @@ export class ExecuteToolNode {
             tool_call_id: call.id,
             name: call.name,
             content: JSON.stringify({ error: observation.error }),
-          })
+          }),
         );
         lastError = observation.error;
         continue;
@@ -212,23 +212,23 @@ export class ExecuteToolNode {
       const context = this.buildExecutionContext(
         call.name,
         toolConfig,
-        configurable
+        configurable,
       );
 
       const startedAt = Date.now();
       this.logger.log(
-        `🔧 Executing tool ${call.name} with args: ${JSON.stringify(sanitizedArgs)}`
+        `🔧 Executing tool ${call.name} with args: ${JSON.stringify(sanitizedArgs)}`,
       );
 
       const result = await this.mcpClient.executeTool(
         call.name,
         sanitizedArgs,
-        context
+        context,
       );
       const durationMs = Date.now() - startedAt;
 
       this.logger.log(
-        `🔧 Tool ${call.name} execution result: success=${result.success}, error=${result.error}`
+        `🔧 Tool ${call.name} execution result: success=${result.success}, error=${result.error}`,
       );
 
       const observation: ToolObservation = {
@@ -256,7 +256,7 @@ export class ExecuteToolNode {
           tool_call_id: call.id,
           name: call.name,
           content: this.formatToolMessageContent(result.result, observation),
-        })
+        }),
       );
 
       if (result.success) {
@@ -292,7 +292,7 @@ export class ExecuteToolNode {
       };
     }
 
-    const successCount = summaries.filter(s => s.observation.success).length;
+    const successCount = summaries.filter((s) => s.observation.success).length;
     const failureCount = summaries.length - successCount;
     const doing = `Executed ${summaries.length} tool call(s)`;
     const next = "Reflect and decide next step";
@@ -322,7 +322,7 @@ export class ExecuteToolNode {
   }
 
   private buildToolConfigMap(
-    allowedTools: ReactGraphSettings["allowedTools"] | undefined
+    allowedTools: ReactGraphSettings["allowedTools"] | undefined,
   ): Map<string, Record<string, any>> {
     const map = new Map<string, Record<string, any>>();
 
@@ -347,7 +347,7 @@ export class ExecuteToolNode {
   private mergeToolArgs(
     toolName: string,
     rawArgs: Record<string, unknown>,
-    toolConfig: Record<string, unknown>
+    toolConfig: Record<string, unknown>,
   ): Record<string, any> {
     const normalizedArgs = { ...(rawArgs ?? {}) } as Record<string, any>;
 
@@ -361,7 +361,7 @@ export class ExecuteToolNode {
   private buildExecutionContext(
     toolName: string,
     toolConfig: Record<string, unknown>,
-    configurable?: ReactGraphConfigValues
+    configurable?: ReactGraphConfigValues,
   ): Record<string, any> {
     const context: Record<string, any> = {
       // Include all tool-specific config (kbIds, telegramBotToken, etc.)
@@ -382,7 +382,7 @@ export class ExecuteToolNode {
 
   private formatToolMessageContent(
     result: unknown,
-    observation: ToolObservation
+    observation: ToolObservation,
   ): string {
     if (observation.success) {
       if (typeof result === "string") {
@@ -426,7 +426,7 @@ export class ExecuteToolNode {
 
   private sanitizeArgs(
     schema: ToolMetadataInputSchema,
-    rawArgs: Record<string, any>
+    rawArgs: Record<string, any>,
   ): { sanitizedArgs: Record<string, any>; issues: string[] } {
     const issues: string[] = [];
     const sanitized: Record<string, any> = {};
@@ -444,7 +444,7 @@ export class ExecuteToolNode {
       }
     });
 
-    required.forEach(field => {
+    required.forEach((field) => {
       if (sanitized[field] === undefined || sanitized[field] === null) {
         issues.push(`Missing required field: ${field}`);
       }
@@ -455,7 +455,7 @@ export class ExecuteToolNode {
 
   private computeInvocationHash(
     tool: string,
-    args: Record<string, any>
+    args: Record<string, any>,
   ): string {
     return `${tool}::${JSON.stringify(args, Object.keys(args).sort())}`;
   }
@@ -489,7 +489,7 @@ export class ExecuteToolNode {
           const title = item?.title || `Result ${index + 1}`;
           const url = item?.url ? ` (${item.url})` : "";
           const content = this.snippetFromUnknown(
-            item?.content ?? item?.rawContent
+            item?.content ?? item?.rawContent,
           );
           return `${index + 1}. ${title}${url}: ${content}`;
         })

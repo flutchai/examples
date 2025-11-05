@@ -7,6 +7,7 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
     "start": "nest start",
     "dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -18,7 +19,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
   },
   "dependencies": {
-    "@flutchai/flutch-sdk": "file:../../../node-sdk",
+    "@flutchai/flutch-sdk": "^0.1.6",
     "@langchain/core": "^1.0.2",
     "@langchain/langgraph": "^1.0.1",
     "@langchain/langgraph-checkpoint-mongodb": "^1.0.0",

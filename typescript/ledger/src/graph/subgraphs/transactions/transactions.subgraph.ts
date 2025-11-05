@@ -28,7 +28,7 @@ export class TransactionsSubgraph {
     private readonly buildNode: BuildTransactionNode,
     private readonly confirmNode: ConfirmAccountsNode,
     private readonly createNode: CreateTransactionsNode,
-    private readonly presentNode: PresentResultNode
+    private readonly presentNode: PresentResultNode,
   ) {}
 
   /**
@@ -70,7 +70,7 @@ export class TransactionsSubgraph {
     // After analyze: check for errors
     subgraph.addConditionalEdges(
       "analyze",
-      state => {
+      (state) => {
         if (state.hasErrors) {
           this.logger.warn("Analysis failed, ending subgraph");
           return END;
@@ -80,7 +80,7 @@ export class TransactionsSubgraph {
       {
         build: "build",
         __end__: END,
-      }
+      },
     );
 
     subgraph.addEdge("build", "confirm");
@@ -88,7 +88,7 @@ export class TransactionsSubgraph {
     // After confirm: check if user cancelled
     subgraph.addConditionalEdges(
       "confirm",
-      state => {
+      (state) => {
         if (state.hasErrors) {
           this.logger.warn("Confirmation cancelled or failed, ending subgraph");
           return END;
@@ -98,7 +98,7 @@ export class TransactionsSubgraph {
       {
         create: "create",
         __end__: END,
-      }
+      },
     );
 
     subgraph.addEdge("create", "present");

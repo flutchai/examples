@@ -23,7 +23,7 @@ export class GenerateAnswerNode {
 
   async execute(
     state: ReactGraphStateValues,
-    config?: LangGraphRunnableConfig<ReactGraphConfigValues>
+    config?: LangGraphRunnableConfig<ReactGraphConfigValues>,
   ): Promise<Partial<ReactGraphStateValues>> {
     const graphSettings: ReactGraphSettings =
       (config?.configurable?.graphSettings as ReactGraphSettings) || {};
@@ -57,7 +57,7 @@ export class GenerateAnswerNode {
     try {
       const aiMessage = await answerModel.invoke(
         [new SystemMessage(prompt.system), new HumanMessage(prompt.human)],
-        config
+        config,
       );
 
       answerText = this.extractMessageText(aiMessage);
@@ -96,7 +96,7 @@ export class GenerateAnswerNode {
           timestamp: new Date().toISOString(),
           details: {
             outlineProvided: Boolean(
-              answerOutline && answerOutline.trim().length > 0
+              answerOutline && answerOutline.trim().length > 0,
             ),
           },
         },
@@ -107,7 +107,7 @@ export class GenerateAnswerNode {
   private buildAnswerPrompt(
     state: ReactGraphStateValues,
     outline?: string,
-    config: GenerateAnswerConfig & { customPrompt?: string } = {}
+    config: GenerateAnswerConfig & { customPrompt?: string } = {},
   ) {
     const evidence = state.evidence || "(no aggregated evidence)";
     const workingSummary = this.formatWorkingMemory(state);
@@ -166,7 +166,7 @@ Provide the answer as polished user-facing text (no JSON or metadata blocks). If
     }
 
     return state.workingMemory
-      .map(entry => {
+      .map((entry) => {
         const status = entry.observation.success ? "success" : "failure";
         const snippet =
           entry.observation.summary ||
@@ -174,7 +174,7 @@ Provide the answer as polished user-facing text (no JSON or metadata blocks). If
             typeof entry.observation.payload === "string"
               ? entry.observation.payload
               : JSON.stringify(entry.observation.payload ?? {}, null, 2),
-            400
+            400,
           );
         return `${entry.tool} (${status}): ${snippet}`;
       })

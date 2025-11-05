@@ -9,16 +9,16 @@ import {
  * Build attachments from graph state by extracting them from working memory
  */
 export function buildAttachmentsFromState(
-  state: ReactGraphStateValues
+  state: ReactGraphStateValues,
 ): IAttachment[] {
   const attachments: IAttachment[] = [];
   const seen = new Set<string>();
 
   const summaries = state.workingMemory ?? [];
-  summaries.forEach(summary => {
+  summaries.forEach((summary) => {
     const payload = summary.observation?.payload;
     const extracted = extractAttachmentsFromPayload(payload);
-    extracted.forEach(att => {
+    extracted.forEach((att) => {
       // For citations, deduplicate by source URL and title
       if (att.type === AttachmentType.CITATION) {
         const citationValue = att.value as CitationValue;

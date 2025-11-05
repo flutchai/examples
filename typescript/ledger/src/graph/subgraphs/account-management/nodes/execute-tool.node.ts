@@ -16,12 +16,12 @@ import { AccountManagementStateValues } from "../account-management.subgraph";
 export class ExecuteToolNode {
   constructor(
     @Inject("AccountService") private readonly accountService: any,
-    private readonly modelInitializer: ModelInitializer
+    private readonly modelInitializer: ModelInitializer,
   ) {}
 
   async execute(
     state: AccountManagementStateValues,
-    config: LangGraphRunnableConfig<any>
+    config: LangGraphRunnableConfig<any>,
   ): Promise<Partial<AccountManagementStateValues>> {
     const userId = state.userId;
     const messages = state.messages || [];
@@ -58,7 +58,7 @@ export class ExecuteToolNode {
     // Check if model wants to call tools
     if (response.tool_calls && response.tool_calls.length > 0) {
       console.log(
-        `[EXECUTE_TOOL] Executing ${response.tool_calls.length} tool calls`
+        `[EXECUTE_TOOL] Executing ${response.tool_calls.length} tool calls`,
       );
 
       // Execute tool calls and create ToolMessage objects
@@ -76,7 +76,7 @@ export class ExecuteToolNode {
               content: JSON.stringify({
                 error: `Tool ${toolCall.name} not found`,
               }),
-            })
+            }),
           );
           continue;
         }
@@ -90,16 +90,16 @@ export class ExecuteToolNode {
               tool_call_id: toolCall.id,
               name: toolCall.name,
               content: result,
-            })
+            }),
           );
 
           console.log(
-            `[EXECUTE_TOOL] Tool ${toolCall.name} executed successfully`
+            `[EXECUTE_TOOL] Tool ${toolCall.name} executed successfully`,
           );
         } catch (error: any) {
           console.error(
             `[EXECUTE_TOOL] Tool ${toolCall.name} failed:`,
-            error.message
+            error.message,
           );
 
           toolMessages.push(
@@ -107,7 +107,7 @@ export class ExecuteToolNode {
               tool_call_id: toolCall.id,
               name: toolCall.name,
               content: JSON.stringify({ error: error.message }),
-            })
+            }),
           );
         }
       }
@@ -137,7 +137,7 @@ export class ExecuteToolNode {
 
   private createListAccountsTool(
     userId: string,
-    DynamicStructuredTool: any
+    DynamicStructuredTool: any,
   ): any {
     const schema = z.object({
       accountType: z
@@ -156,7 +156,7 @@ export class ExecuteToolNode {
         const accounts = input.accountType
           ? await this.accountService.getAccountsByType(
               userId,
-              input.accountType
+              input.accountType,
             )
           : await this.accountService.getUserAccounts(userId);
 
@@ -175,7 +175,7 @@ export class ExecuteToolNode {
             balance: acc.balance,
           })),
           null,
-          2
+          2,
         );
       },
     });
@@ -183,13 +183,13 @@ export class ExecuteToolNode {
 
   private createCreateAccountTool(
     userId: string,
-    DynamicStructuredTool: any
+    DynamicStructuredTool: any,
   ): any {
     const schema = z.object({
       code: z
         .string()
         .describe(
-          `Account code following the chart of accounts numbering system: ${CHART_OF_ACCOUNTS_SHORT} (e.g., '1010' for Cash, '5100' for Salaries)`
+          `Account code following the chart of accounts numbering system: ${CHART_OF_ACCOUNTS_SHORT} (e.g., '1010' for Cash, '5100' for Salaries)`,
         ),
       name: z
         .string()
@@ -247,7 +247,7 @@ export class ExecuteToolNode {
 
   private createUpdateAccountTool(
     userId: string,
-    DynamicStructuredTool: any
+    DynamicStructuredTool: any,
   ): any {
     const schema = z.object({
       code: z.string().describe("Account code to update"),
@@ -269,7 +269,7 @@ export class ExecuteToolNode {
           const account = await this.accountService.updateAccount(
             input.code,
             userId,
-            updateDto
+            updateDto,
           );
 
           return `Successfully updated account: ${account.accountCode} - ${account.accountName}`;

@@ -140,10 +140,10 @@ export class WorkflowStateUtils {
 
   static advanceStep(
     state: StructuredWorkflowState,
-    nextStep: WorkflowStep
+    nextStep: WorkflowStep,
   ): Partial<StructuredWorkflowState> {
     const completed = state.progress.completedSteps.includes(
-      state.progress.currentStep
+      state.progress.currentStep,
     )
       ? state.progress.completedSteps
       : [...state.progress.completedSteps, state.progress.currentStep];
@@ -159,7 +159,7 @@ export class WorkflowStateUtils {
 
   static addError(
     state: StructuredWorkflowState,
-    error: string
+    error: string,
   ): Partial<StructuredWorkflowState> {
     return {
       progress: {
@@ -171,7 +171,7 @@ export class WorkflowStateUtils {
   }
 
   static markCompleted(
-    state: StructuredWorkflowState
+    state: StructuredWorkflowState,
   ): Partial<StructuredWorkflowState> {
     return {
       progress: {
@@ -184,7 +184,7 @@ export class WorkflowStateUtils {
 
   static updateMetadata(
     state: StructuredWorkflowState,
-    updates: Record<string, any>
+    updates: Record<string, any>,
   ): Partial<StructuredWorkflowState> {
     return {
       metadata: { ...state.metadata, ...updates },

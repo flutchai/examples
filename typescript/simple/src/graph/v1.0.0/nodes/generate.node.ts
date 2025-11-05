@@ -2,7 +2,10 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ModelInitializer, McpToolFilter } from "@flutchai/flutch-sdk";
 import { ConfigService } from "@nestjs/config";
 import { SystemMessage, AIMessage } from "@langchain/core/messages";
-import { SimpleGraphStateValues, SimpleConfigValues } from "../../../simple.types";
+import {
+  SimpleGraphStateValues,
+  SimpleConfigValues,
+} from "../../../simple.types";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 
 /**
@@ -16,19 +19,22 @@ export class GenerateNode {
 
   constructor(
     private readonly modelInitializer: ModelInitializer,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {}
 
   async execute(
     state: SimpleGraphStateValues,
-    config?: LangGraphRunnableConfig<SimpleConfigValues>
+    config?: LangGraphRunnableConfig<SimpleConfigValues>,
   ): Promise<Partial<SimpleGraphStateValues>> {
     this.logger.debug("Executing generate node");
 
     try {
       // Get model settings from config
       const graphSettings = (config?.configurable as any)?.graphSettings;
-      const modelId = graphSettings?.modelId || this.configService.get<string>("DEFAULT_MODEL_ID") || "6862986ccd48b6854358ee77";
+      const modelId =
+        graphSettings?.modelId ||
+        this.configService.get<string>("DEFAULT_MODEL_ID") ||
+        "6862986ccd48b6854358ee77";
       const temperature = graphSettings?.temperature;
       const systemPrompt = graphSettings?.systemPrompt || "";
 
@@ -36,13 +42,14 @@ export class GenerateNode {
 
       // Get validated tools using McpToolFilter
       const enabledTools = graphSettings?.availableTools || [];
-      const tools = enabledTools.length > 0
-        ? await this.mcpToolFilter.getFilteredTools(enabledTools)
-        : [];
+      const tools =
+        enabledTools.length > 0
+          ? await this.mcpToolFilter.getFilteredTools(enabledTools)
+          : [];
 
       if (tools.length > 0) {
         this.logger.log(
-          `Configured ${tools.length} tools from MCP runtime: ${tools.map(t => t.name).join(", ")}`
+          `Configured ${tools.length} tools from MCP runtime: ${tools.map((t) => t.name).join(", ")}`,
         );
       } else if (enabledTools.length > 0) {
         this.logger.warn("No tools available from MCP runtime");
@@ -60,7 +67,7 @@ export class GenerateNode {
       // Prepare messages with system prompt
       const messages = [new SystemMessage(systemPrompt), ...state.messages];
       this.logger.debug(
-        `Processing ${messages.length} messages with ${tools.length} tools`
+        `Processing ${messages.length} messages with ${tools.length} tools`,
       );
 
       // Call the model

@@ -136,7 +136,7 @@ describe("ServiceController", () => {
         const result = await controller.createAccount(createAccountDto);
 
         expect(accountService.createAccount).toHaveBeenCalledWith(
-          createAccountDto
+          createAccountDto,
         );
         expect(result.success).toBe(true);
         expect(result.account.accountCode).toBe("1001");
@@ -144,7 +144,7 @@ describe("ServiceController", () => {
 
       it("should handle creation errors", async () => {
         accountService.createAccount.mockRejectedValue(
-          new BadRequestException("Account already exists")
+          new BadRequestException("Account already exists"),
         );
 
         const result = await controller.createAccount(createAccountDto);
@@ -172,12 +172,12 @@ describe("ServiceController", () => {
 
         const result = await controller.getUserAccounts(
           "user-1",
-          AccountType.ASSET
+          AccountType.ASSET,
         );
 
         expect(accountService.getAccountsByType).toHaveBeenCalledWith(
           "user-1",
-          AccountType.ASSET
+          AccountType.ASSET,
         );
         expect(result.success).toBe(true);
       });
@@ -198,7 +198,7 @@ describe("ServiceController", () => {
 
         expect(accountService.getAccount).toHaveBeenCalledWith(
           "1001",
-          "user-1"
+          "user-1",
         );
         expect(result.success).toBe(true);
         expect(result.account.accountCode).toBe("1001");
@@ -226,13 +226,13 @@ describe("ServiceController", () => {
         const result = await controller.updateAccount(
           "1001",
           "user-1",
-          updateDto
+          updateDto,
         );
 
         expect(accountService.updateAccount).toHaveBeenCalledWith(
           "1001",
           "user-1",
-          updateDto
+          updateDto,
         );
         expect(result.success).toBe(true);
         expect(result.account.currency).toBe(Currency.EUR);
@@ -254,7 +254,7 @@ describe("ServiceController", () => {
 
         expect(accountService.deactivateAccount).toHaveBeenCalledWith(
           "1001",
-          "user-1"
+          "user-1",
         );
         expect(result.success).toBe(true);
         expect(result.message).toContain("has been deactivated");
@@ -263,8 +263,8 @@ describe("ServiceController", () => {
       it("should handle deactivation errors", async () => {
         accountService.deactivateAccount.mockRejectedValue(
           new BadRequestException(
-            "Cannot deactivate account with non-zero balance"
-          )
+            "Cannot deactivate account with non-zero balance",
+          ),
         );
 
         const result = await controller.deactivateAccount("1001", "user-1");
@@ -284,7 +284,7 @@ describe("ServiceController", () => {
 
       it("should setup default accounts", async () => {
         accountService.setupDefaultAccounts.mockResolvedValue(
-          defaultAccounts as any
+          defaultAccounts as any,
         );
 
         const result = await controller.setupDefaultAccounts({
@@ -292,7 +292,7 @@ describe("ServiceController", () => {
         });
 
         expect(accountService.setupDefaultAccounts).toHaveBeenCalledWith(
-          "user-1"
+          "user-1",
         );
         expect(result.success).toBe(true);
         expect(result.accounts).toHaveProperty("cash");
@@ -323,7 +323,7 @@ describe("ServiceController", () => {
         const result = await controller.getAccountBalances("user-1");
 
         expect(accountService.getAccountBalances).toHaveBeenCalledWith(
-          "user-1"
+          "user-1",
         );
         expect(result.success).toBe(true);
         expect(result.balances).toEqual(balances);
@@ -368,7 +368,7 @@ describe("ServiceController", () => {
 
       it("should return filtered transactions", async () => {
         transactionService.getTransactions.mockResolvedValue(
-          mockTransactions as any
+          mockTransactions as any,
         );
 
         const result = await controller.getTransactions(
@@ -379,7 +379,7 @@ describe("ServiceController", () => {
           "100",
           "2000",
           "10",
-          "0"
+          "0",
         );
 
         expect(transactionService.getTransactions).toHaveBeenCalledWith({
@@ -423,19 +423,19 @@ describe("ServiceController", () => {
         };
 
         transactionService.validateTransaction.mockResolvedValue(
-          validationResult
+          validationResult,
         );
         transactionService.processTransaction.mockResolvedValue(
-          transactionResult
+          transactionResult,
         );
 
         const result = await controller.processTransaction(transactionDto);
 
         expect(transactionService.validateTransaction).toHaveBeenCalledWith(
-          transactionDto
+          transactionDto,
         );
         expect(transactionService.processTransaction).toHaveBeenCalledWith(
-          transactionDto
+          transactionDto,
         );
         expect(result).toEqual(transactionResult);
       });
@@ -447,7 +447,7 @@ describe("ServiceController", () => {
         };
 
         transactionService.validateTransaction.mockResolvedValue(
-          validationResult
+          validationResult,
         );
 
         const result = await controller.processTransaction(transactionDto);
@@ -460,10 +460,10 @@ describe("ServiceController", () => {
         const validationResult = { isValid: true, errors: [] };
 
         transactionService.validateTransaction.mockResolvedValue(
-          validationResult
+          validationResult,
         );
         transactionService.processTransaction.mockRejectedValue(
-          new Error("Database error")
+          new Error("Database error"),
         );
 
         const result = await controller.processTransaction(transactionDto);
@@ -485,19 +485,19 @@ describe("ServiceController", () => {
 
       it("should return transaction summary", async () => {
         transactionService.getTransactionSummary.mockResolvedValue(
-          summary as any
+          summary as any,
         );
 
         const result = await controller.getTransactionSummary(
           "user-1",
           "2024-01-01",
-          "2024-01-31"
+          "2024-01-31",
         );
 
         expect(transactionService.getTransactionSummary).toHaveBeenCalledWith(
           "user-1",
           new Date("2024-01-01"),
-          new Date("2024-01-31")
+          new Date("2024-01-31"),
         );
         expect(result.success).toBe(true);
         expect(result.summary).toEqual(summary);
@@ -536,13 +536,13 @@ describe("ServiceController", () => {
 
       it("should create journal entry successfully", async () => {
         journalEntryService.createJournalEntry.mockResolvedValue(
-          mockJournalEntry as any
+          mockJournalEntry as any,
         );
 
         const result = await controller.createJournalEntry(createDto);
 
         expect(journalEntryService.createJournalEntry).toHaveBeenCalledWith(
-          createDto
+          createDto,
         );
         expect(result.success).toBe(true);
         expect(result.journalEntry.journalEntryId).toBe("JE-2024-000001");
@@ -550,7 +550,7 @@ describe("ServiceController", () => {
 
       it("should handle creation errors", async () => {
         journalEntryService.createJournalEntry.mockRejectedValue(
-          new BadRequestException("Invalid journal entry")
+          new BadRequestException("Invalid journal entry"),
         );
 
         const result = await controller.createJournalEntry(createDto);
@@ -564,21 +564,21 @@ describe("ServiceController", () => {
       it("should return user journal entries", async () => {
         const entries = [mockJournalEntry];
         journalEntryService.getUserJournalEntries.mockResolvedValue(
-          entries as any
+          entries as any,
         );
 
         const result = await controller.getUserJournalEntries(
           "user-1",
           JournalEntryStatus.DRAFT,
           "10",
-          "0"
+          "0",
         );
 
         expect(journalEntryService.getUserJournalEntries).toHaveBeenCalledWith(
           "user-1",
           JournalEntryStatus.DRAFT,
           10,
-          0
+          0,
         );
         expect(result.success).toBe(true);
         expect(result.entries).toHaveLength(1);
@@ -595,13 +595,13 @@ describe("ServiceController", () => {
     describe("getJournalEntry", () => {
       it("should return journal entry", async () => {
         journalEntryService.getJournalEntry.mockResolvedValue(
-          mockJournalEntry as any
+          mockJournalEntry as any,
         );
 
         const result = await controller.getJournalEntry("JE-2024-000001");
 
         expect(journalEntryService.getJournalEntry).toHaveBeenCalledWith(
-          "JE-2024-000001"
+          "JE-2024-000001",
         );
         expect(result.success).toBe(true);
         expect(result.journalEntry.journalEntryId).toBe("JE-2024-000001");
@@ -630,29 +630,29 @@ describe("ServiceController", () => {
       it("should update journal entry successfully", async () => {
         const updatedEntry = { ...mockJournalEntry, ...updateDto };
         journalEntryService.updateJournalEntry.mockResolvedValue(
-          updatedEntry as any
+          updatedEntry as any,
         );
 
         const result = await controller.updateJournalEntry(
           "JE-2024-000001",
-          updateDto
+          updateDto,
         );
 
         expect(journalEntryService.updateJournalEntry).toHaveBeenCalledWith(
           "JE-2024-000001",
-          updateDto
+          updateDto,
         );
         expect(result.success).toBe(true);
       });
 
       it("should handle update errors", async () => {
         journalEntryService.updateJournalEntry.mockRejectedValue(
-          new BadRequestException("Can only update draft entries")
+          new BadRequestException("Can only update draft entries"),
         );
 
         const result = await controller.updateJournalEntry(
           "JE-2024-000001",
-          updateDto
+          updateDto,
         );
 
         expect(result.success).toBe(false);
@@ -668,13 +668,13 @@ describe("ServiceController", () => {
           affectedAccounts: ["1001", "3001"],
         };
         journalEntryService.postJournalEntry.mockResolvedValue(
-          postResult as any
+          postResult as any,
         );
 
         const result = await controller.postJournalEntry("JE-2024-000001");
 
         expect(journalEntryService.postJournalEntry).toHaveBeenCalledWith(
-          "JE-2024-000001"
+          "JE-2024-000001",
         );
         expect(result).toEqual(postResult);
       });
@@ -686,7 +686,7 @@ describe("ServiceController", () => {
           affectedAccounts: [],
         };
         journalEntryService.postJournalEntry.mockResolvedValue(
-          errorResult as any
+          errorResult as any,
         );
 
         const result = await controller.postJournalEntry("JE-2024-000001");
@@ -704,7 +704,7 @@ describe("ServiceController", () => {
           affectedAccounts: ["1001", "3001"],
         };
         journalEntryService.reverseJournalEntry.mockResolvedValue(
-          reverseResult as any
+          reverseResult as any,
         );
 
         const result = await controller.reverseJournalEntry("JE-2024-000001", {
@@ -713,7 +713,7 @@ describe("ServiceController", () => {
 
         expect(journalEntryService.reverseJournalEntry).toHaveBeenCalledWith(
           "JE-2024-000001",
-          "Correction needed"
+          "Correction needed",
         );
         expect(result).toEqual(reverseResult);
       });
@@ -732,21 +732,21 @@ describe("ServiceController", () => {
       it("should return account activity", async () => {
         const entries = [mockJournalEntry];
         journalEntryService.getAccountActivity.mockResolvedValue(
-          entries as any
+          entries as any,
         );
 
         const result = await controller.getAccountActivity(
           "1001",
           "user-1",
           "2024-01-01",
-          "2024-01-31"
+          "2024-01-31",
         );
 
         expect(journalEntryService.getAccountActivity).toHaveBeenCalledWith(
           "user-1",
           "1001",
           new Date("2024-01-01"),
-          new Date("2024-01-31")
+          new Date("2024-01-31"),
         );
         expect(result.success).toBe(true);
         expect(result.entries).toHaveLength(1);

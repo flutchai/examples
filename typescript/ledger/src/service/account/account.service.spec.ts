@@ -105,7 +105,7 @@ describe("AccountService", () => {
       const invalidDto = { ...createAccountDto, accountCode: "invalid" };
 
       await expect(service.createAccount(invalidDto)).rejects.toThrow(
-        BadRequestException
+        BadRequestException,
       );
     });
 
@@ -113,7 +113,7 @@ describe("AccountService", () => {
       repository.findByCode.mockResolvedValue(mockAccount as any);
 
       await expect(service.createAccount(createAccountDto)).rejects.toThrow(
-        "Account with code 1001 already exists"
+        "Account with code 1001 already exists",
       );
     });
   });
@@ -132,7 +132,7 @@ describe("AccountService", () => {
       repository.findByCode.mockResolvedValue(null);
 
       await expect(service.getAccount("1001", "user-1")).rejects.toThrow(
-        NotFoundException
+        NotFoundException,
       );
     });
   });
@@ -160,7 +160,7 @@ describe("AccountService", () => {
       repository.findByCode.mockResolvedValue(null);
 
       await expect(
-        service.updateAccount("1001", "user-1", updateDto)
+        service.updateAccount("1001", "user-1", updateDto),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -181,7 +181,7 @@ describe("AccountService", () => {
       repository.findByCode.mockResolvedValue(mockAccount as any);
 
       await expect(service.deactivateAccount("1001", "user-1")).rejects.toThrow(
-        "Cannot deactivate account with non-zero balance"
+        "Cannot deactivate account with non-zero balance",
       );
     });
   });
@@ -204,7 +204,7 @@ describe("AccountService", () => {
         "1001",
         "3001",
         100,
-        "user-1"
+        "user-1",
       );
 
       expect(result.isValid).toBe(true);
@@ -227,7 +227,7 @@ describe("AccountService", () => {
         "1001",
         "3001",
         100,
-        "user-1"
+        "user-1",
       );
 
       expect(result.isValid).toBe(false);
@@ -239,7 +239,7 @@ describe("AccountService", () => {
         "1001",
         "3001",
         -100,
-        "user-1"
+        "user-1",
       );
 
       expect(result.isValid).toBe(false);
@@ -282,13 +282,13 @@ describe("AccountService", () => {
       };
 
       repository.findOrCreateDefaultAccounts.mockResolvedValue(
-        defaultAccounts as any
+        defaultAccounts as any,
       );
 
       const result = await service.setupDefaultAccounts("user-1");
 
       expect(repository.findOrCreateDefaultAccounts).toHaveBeenCalledWith(
-        "user-1"
+        "user-1",
       );
       expect(result).toEqual(defaultAccounts);
     });
@@ -313,12 +313,12 @@ describe("AccountService", () => {
 
       const result = await service.getAccountsByType(
         "user-1",
-        AccountType.ASSET
+        AccountType.ASSET,
       );
 
       expect(repository.findByType).toHaveBeenCalledWith(
         "user-1",
-        AccountType.ASSET
+        AccountType.ASSET,
       );
       expect(result).toEqual(accounts);
     });
@@ -333,7 +333,7 @@ describe("AccountService", () => {
 
       expect(repository.incrementBalance).toHaveBeenCalledWith(
         "account-id-1",
-        100
+        100,
       );
       expect(result).toEqual(adjustedAccount);
     });
@@ -342,7 +342,7 @@ describe("AccountService", () => {
       repository.incrementBalance.mockResolvedValue(null);
 
       await expect(
-        service.adjustAccountBalance("account-id-1", 100)
+        service.adjustAccountBalance("account-id-1", 100),
       ).rejects.toThrow(NotFoundException);
     });
   });

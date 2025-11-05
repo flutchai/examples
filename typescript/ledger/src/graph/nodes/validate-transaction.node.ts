@@ -18,11 +18,11 @@ export class ValidateTransactionNode {
     private readonly accountService: AccountService,
     private readonly journalEntryService: JournalEntryService,
     private readonly audit: LedgerAuditService,
-    private readonly metrics: LedgerMetrics
+    private readonly metrics: LedgerMetrics,
   ) {}
 
   async execute(
-    state: WorkflowStateValues
+    state: WorkflowStateValues,
   ): Promise<Partial<WorkflowStateValues>> {
     this.metrics.incOperations();
     this.logger.log("Validating transaction");
@@ -41,13 +41,13 @@ export class ValidateTransactionNode {
 
       if (validation.isValid) {
         this.logger.log(
-          `Transaction validation passed: accounts verified=${validation.accountsVerified}, balance checked=${validation.balanceChecked}`
+          `Transaction validation passed: accounts verified=${validation.accountsVerified}, balance checked=${validation.balanceChecked}`,
         );
 
         // Advance to final step
         const stepUpdate = WorkflowStateUtils.advanceStep(
           state,
-          "present_result"
+          "present_result",
         );
         const metadataUpdate = WorkflowStateUtils.updateMetadata(state, {
           validated: true,
@@ -62,13 +62,13 @@ export class ValidateTransactionNode {
         };
       } else {
         this.logger.log(
-          `Transaction validation failed: ${validation.errors.length} errors - ${validation.errors.slice(0, 2).join(", ")}${validation.errors.length > 2 ? "..." : ""}`
+          `Transaction validation failed: ${validation.errors.length} errors - ${validation.errors.slice(0, 2).join(", ")}${validation.errors.length > 2 ? "..." : ""}`,
         );
 
         // Validation failed
         const errorUpdate = WorkflowStateUtils.addError(
           state,
-          `Validation failed: ${validation.errors.join(", ")}`
+          `Validation failed: ${validation.errors.join(", ")}`,
         );
 
         return {
@@ -106,7 +106,7 @@ export class ValidateTransactionNode {
   }
 
   private async validateTransaction(
-    state: WorkflowStateValues
+    state: WorkflowStateValues,
   ): Promise<ValidationResults> {
     const errors: string[] = [];
     const warnings: string[] = [];
@@ -129,7 +129,7 @@ export class ValidateTransactionNode {
     // 1. Validate transaction balance
     if (!builtTransaction.isBalanced) {
       errors.push(
-        `Transaction is not balanced: Debit=${builtTransaction.totalDebit}, Credit=${builtTransaction.totalCredit}`
+        `Transaction is not balanced: Debit=${builtTransaction.totalDebit}, Credit=${builtTransaction.totalCredit}`,
       );
     } else {
       balanceChecked = true;
@@ -140,7 +140,7 @@ export class ValidateTransactionNode {
       userId: input.userId,
       description: input.description,
       reference: input.reference,
-      entries: builtTransaction.journalEntryLines.map(line => ({
+      entries: builtTransaction.journalEntryLines.map((line) => ({
         accountCode: line.accountCode,
         description: line.description,
         debitAmount: line.debitAmount,
@@ -160,7 +160,7 @@ export class ValidateTransactionNode {
     // 3. Validate individual accounts
     try {
       const accountCodes = builtTransaction.journalEntryLines.map(
-        line => line.accountCode
+        (line) => line.accountCode,
       );
       const uniqueAccountCodes = [...new Set(accountCodes)];
 
@@ -168,7 +168,7 @@ export class ValidateTransactionNode {
         try {
           const account = await this.accountService.getAccount(
             accountCode,
-            input.userId as string
+            input.userId as string,
           );
 
           // Check if account is active
@@ -178,7 +178,7 @@ export class ValidateTransactionNode {
 
           // Check for sufficient funds (for debit transactions on asset accounts)
           const accountLines = builtTransaction.journalEntryLines.filter(
-            line => line.accountCode === accountCode
+            (line) => line.accountCode === accountCode,
           );
 
           for (const line of accountLines) {
@@ -186,7 +186,7 @@ export class ValidateTransactionNode {
               // This is a credit to an asset account (money going out)
               if (account.balance < line.creditAmount) {
                 errors.push(
-                  `Insufficient funds in account ${accountCode}: balance=${account.balance}, required=${line.creditAmount}`
+                  `Insufficient funds in account ${accountCode}: balance=${account.balance}, required=${line.creditAmount}`,
                 );
               }
             }
@@ -214,7 +214,7 @@ export class ValidateTransactionNode {
       try {
         const existingEntries =
           await this.journalEntryService.getJournalEntriesByReference(
-            input.reference
+            input.reference,
           );
         if (existingEntries.length > 0) {
           warnings.push(`Reference ${input.reference} has been used before`);
@@ -222,7 +222,7 @@ export class ValidateTransactionNode {
       } catch (error) {
         // Non-critical error, just log it
         this.logger.warn(
-          `Could not check for duplicate reference: ${error.message}`
+          `Could not check for duplicate reference: ${error.message}`,
         );
       }
     }

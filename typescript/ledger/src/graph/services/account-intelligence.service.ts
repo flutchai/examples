@@ -59,9 +59,7 @@ export const AccountAnalysisSchema = z.object({
   recommendation: z.object({
     action: z.enum(["use_existing", "create_new", "user_choice"]),
     confidence: z.number().min(0).max(1),
-    explanation: z
-      .string()
-      .describe("Recommendation explanation for user"),
+    explanation: z.string().describe("Recommendation explanation for user"),
   }),
 });
 
@@ -87,7 +85,7 @@ export const BatchAccountAnalysisSchema = z.object({
         exists: z.boolean().describe("Does this account already exist?"),
       }),
       reasoning: z.string().optional().describe("Why these accounts?"),
-    })
+    }),
   ),
   newAccountsNeeded: z
     .array(
@@ -95,7 +93,7 @@ export const BatchAccountAnalysisSchema = z.object({
         code: z.string(),
         name: z.string(),
         type: z.nativeEnum(AccountType),
-      })
+      }),
     )
     .describe("Unique list of new accounts to create"),
   overallReasoning: z
@@ -126,21 +124,23 @@ export class AccountIntelligenceService {
     existingAccounts: Account[],
     modelSettings: any,
     usageRecorder: any,
-    currentDate: string
+    currentDate: string,
   ): Promise<BatchAccountAnalysis> {
     this.logger.log(
-      `Analyzing batch of ${transactions.length} transactions for accounts`
+      `Analyzing batch of ${transactions.length} transactions for accounts`,
     );
 
     this.logger.debug(`Model settings: ${JSON.stringify(modelSettings)}`);
 
     const systemPrompt = this.buildBatchSystemPrompt(
       existingAccounts,
-      currentDate
+      currentDate,
     );
     const userPrompt = this.buildBatchUserPrompt(transactions);
 
-    this.logger.debug(`System prompt length: ${systemPrompt.length}, User prompt length: ${userPrompt.length}`);
+    this.logger.debug(
+      `System prompt length: ${systemPrompt.length}, User prompt length: ${userPrompt.length}`,
+    );
 
     try {
       const modelId = modelSettings?.modelId;
@@ -157,7 +157,9 @@ export class AccountIntelligenceService {
         maxTokens,
       });
 
-      this.logger.debug("About to invoke LLM for batch analysis WITHOUT structured output...");
+      this.logger.debug(
+        "About to invoke LLM for batch analysis WITHOUT structured output...",
+      );
 
       // Try calling model directly without withStructuredOutput
       let rawResult: any = null;
@@ -203,7 +205,9 @@ CRITICAL: Respond ONLY with valid JSON in this exact format. No markdown, no ext
           new HumanMessage(userPrompt),
         ]);
 
-        this.logger.debug(`Model returned: ${rawResult ? 'HAS_RAW_RESULT' : 'NO_RAW_RESULT'}`);
+        this.logger.debug(
+          `Model returned: ${rawResult ? "HAS_RAW_RESULT" : "NO_RAW_RESULT"}`,
+        );
         this.logger.debug(`Raw result type: ${typeof rawResult}`);
       } catch (invokeError) {
         this.logger.error("Model invoke failed:", invokeError);
@@ -214,49 +218,62 @@ CRITICAL: Respond ONLY with valid JSON in this exact format. No markdown, no ext
       let result: { parsed: BatchAccountAnalysis; raw: any } | null = null;
 
       try {
-        this.logger.debug(`Raw result keys: ${JSON.stringify(Object.keys(rawResult || {}))}`);
+        this.logger.debug(
+          `Raw result keys: ${JSON.stringify(Object.keys(rawResult || {}))}`,
+        );
 
-        const content = rawResult?.content || rawResult?.text || JSON.stringify(rawResult);
-        this.logger.debug(`Attempting to parse content length: ${content?.length || 0}`);
+        const content =
+          rawResult?.content || rawResult?.text || JSON.stringify(rawResult);
+        this.logger.debug(
+          `Attempting to parse content length: ${content?.length || 0}`,
+        );
         this.logger.debug(`Content preview: ${content.substring(0, 500)}`);
 
         // Extract JSON from markdown code blocks if present
         let jsonStr = content;
-        if (typeof content === 'string') {
+        if (typeof content === "string") {
           // Try to extract JSON from ```json ... ``` blocks
           const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
           if (jsonMatch) {
             jsonStr = jsonMatch[1];
-            this.logger.debug('Extracted JSON from code block');
+            this.logger.debug("Extracted JSON from code block");
           }
         }
 
-        const parsed = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
+        const parsed =
+          typeof jsonStr === "string" ? JSON.parse(jsonStr) : jsonStr;
 
         result = {
           parsed: parsed,
-          raw: rawResult
+          raw: rawResult,
         };
 
-        this.logger.debug(`Successfully parsed result with ${parsed.accountMappings?.length || 0} mappings`);
+        this.logger.debug(
+          `Successfully parsed result with ${parsed.accountMappings?.length || 0} mappings`,
+        );
       } catch (parseError) {
         this.logger.error("Failed to parse LLM response:", parseError);
-        this.logger.error("Raw response structure:", JSON.stringify(rawResult).substring(0, 1000));
-        throw new Error(`Failed to parse batch analysis result: ${parseError.message}`);
+        this.logger.error(
+          "Raw response structure:",
+          JSON.stringify(rawResult).substring(0, 1000),
+        );
+        throw new Error(
+          `Failed to parse batch analysis result: ${parseError.message}`,
+        );
       }
 
       if (!result || !result.parsed) {
         this.logger.error(
           "LLM output was incomplete. Raw content:",
-          result?.raw?.content
+          result?.raw?.content,
         );
         throw new Error(
-          "LLM returned incomplete result for batch account analysis"
+          "LLM returned incomplete result for batch account analysis",
         );
       }
 
       this.logger.log(
-        `Batch analysis complete: ${result.parsed.newAccountsNeeded.length} new accounts needed`
+        `Batch analysis complete: ${result.parsed.newAccountsNeeded.length} new accounts needed`,
       );
 
       return result.parsed;
@@ -273,7 +290,7 @@ CRITICAL: Respond ONLY with valid JSON in this exact format. No markdown, no ext
     existingAccounts: Account[],
     modelSettings: any,
     usageRecorder: any,
-    currentDate: string
+    currentDate: string,
   ): Promise<AccountAnalysis> {
     // Transaction analysis debug logging removed
 
@@ -299,7 +316,7 @@ CRITICAL: Respond ONLY with valid JSON in this exact format. No markdown, no ext
 
       const llmWithStructure = (model as any).withStructuredOutput(
         AccountAnalysisSchema,
-        { name: "account_analyzer", includeRaw: true }
+        { name: "account_analyzer", includeRaw: true },
       );
 
       const result = (await llmWithStructure.invoke([
@@ -312,7 +329,7 @@ CRITICAL: Respond ONLY with valid JSON in this exact format. No markdown, no ext
       if (!result || !result.parsed) {
         this.logger.error(
           "LLM output was incomplete. Raw content:",
-          result?.raw?.content
+          result?.raw?.content,
         );
         throw new Error("LLM returned incomplete result for account analysis");
       }
@@ -326,7 +343,7 @@ CRITICAL: Respond ONLY with valid JSON in this exact format. No markdown, no ext
 
   private buildBatchSystemPrompt(
     existingAccounts: Account[],
-    currentDate: string
+    currentDate: string,
   ): string {
     return `
 You are an accounting and double-entry bookkeeping expert analyzing MULTIPLE transactions at once.
@@ -340,7 +357,8 @@ ${
   existingAccounts.length > 0
     ? existingAccounts
         .map(
-          acc => `${acc.accountCode} - ${acc.accountName} (${acc.accountType})`
+          (acc) =>
+            `${acc.accountCode} - ${acc.accountName} (${acc.accountType})`,
         )
         .join("\n")
     : "No existing accounts except base accounts (Cash, Equity, Revenue, Expense)"
@@ -372,7 +390,7 @@ Each mapping must have transactionIndex matching the input array index.
       currency: string;
       date?: string;
       tags?: string[];
-    }>
+    }>,
   ): string {
     const txList = transactions
       .map((tx, idx) => {
@@ -404,7 +422,7 @@ Ensure:
 
   private buildSystemPrompt(
     existingAccounts: Account[],
-    currentDate: string
+    currentDate: string,
   ): string {
     return `
 You are an accounting and double-entry bookkeeping expert with deep understanding of modern business processes.
@@ -418,7 +436,8 @@ ${
   existingAccounts.length > 0
     ? existingAccounts
         .map(
-          acc => `${acc.accountCode} - ${acc.accountName} (${acc.accountType})`
+          (acc) =>
+            `${acc.accountCode} - ${acc.accountName} (${acc.accountType})`,
         )
         .join("\n")
     : "No existing accounts except base accounts (Cash, Equity, Revenue, Expense)"
@@ -460,7 +479,7 @@ COMMON TRANSACTION PATTERNS:
   private buildUserPrompt(
     userInput: string,
     amount: number,
-    currency: string
+    currency: string,
   ): string {
     return `
 USER INPUT:
@@ -503,7 +522,7 @@ IMPORTANT: Be consistent in choosing accounts for similar transactions.
    */
   generateNextAccountCode(
     accountType: string,
-    existingAccounts: Account[]
+    existingAccounts: Account[],
   ): string {
     const range = ACCOUNT_CODE_RANGES[accountType as AccountType];
     if (!range) {
@@ -512,9 +531,11 @@ IMPORTANT: Be consistent in choosing accounts for similar transactions.
 
     // Find all existing codes in this range
     const existingCodes = existingAccounts
-      .filter(acc => acc.accountType === accountType)
-      .map(acc => parseInt(acc.accountCode))
-      .filter(code => !isNaN(code) && code >= range.start && code <= range.end)
+      .filter((acc) => acc.accountType === accountType)
+      .map((acc) => parseInt(acc.accountCode))
+      .filter(
+        (code) => !isNaN(code) && code >= range.start && code <= range.end,
+      )
       .sort((a, b) => a - b);
 
     // If no existing codes, start from beginning of range + 1
@@ -535,7 +556,7 @@ IMPORTANT: Be consistent in choosing accounts for similar transactions.
     // Check that we haven't exceeded range boundaries
     if (nextCode > range.end) {
       throw new Error(
-        `No available account codes in range ${range.start}-${range.end}`
+        `No available account codes in range ${range.start}-${range.end}`,
       );
     }
 

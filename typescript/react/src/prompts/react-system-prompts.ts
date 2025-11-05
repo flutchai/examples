@@ -110,7 +110,7 @@ export interface PromptContext {
  */
 export function buildContextualReactPrompt(
   config: ReactPromptConfig,
-  context: PromptContext
+  context: PromptContext,
 ): string {
   // Use custom prompt if provided, otherwise use default
   const basePrompt = config.customPrompt || DEFAULT_REACT_NODE_PROMPT;

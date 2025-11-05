@@ -9,7 +9,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@amelie/graph-simple@workspace:."
   dependencies:
-    "@flutchai/flutch-sdk": "file:../../../node-sdk"
+    "@flutchai/flutch-sdk": "npm:^0.1.6"
     "@langchain/core": "npm:^1.0.2"
     "@langchain/langgraph": "npm:^1.0.1"
     "@langchain/langgraph-checkpoint-mongodb": "npm:^1.0.0"
@@ -1242,9 +1242,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@flutchai/flutch-sdk@file:../../../node-sdk::locator=%40amelie%2Fgraph-simple%40workspace%3A.":
-  version: 0.1.5
-  resolution: "@flutchai/flutch-sdk@file:../../../node-sdk#../../../node-sdk::hash=3fc345&locator=%40amelie%2Fgraph-simple%40workspace%3A."
+"@flutchai/flutch-sdk@npm:^0.1.6":
+  version: 0.1.6
+  resolution: "@flutchai/flutch-sdk@npm:0.1.6"
   dependencies:
     "@langchain/anthropic": "npm:^0.3.33"
     "@langchain/azure-openai": "npm:^0.0.11"
@@ -1263,13 +1263,15 @@ __metadata:
     "@nestjs/terminus": "npm:^10.0.1"
     "@willsoto/nestjs-prometheus": "npm:^5.0.0"
     axios: "npm:^1.6.5"
+    class-transformer: "npm:^0.5.1"
+    class-validator: "npm:^0.14.2"
     ioredis: "npm:^5.3.2"
     mongoose: "npm:^8.0.0"
     prom-client: "npm:^14.0.0"
     reflect-metadata: "npm:^0.2.0"
     rxjs: "npm:^7.8.1"
     zod: "npm:^3.22.4"
-  checksum: 10c0/7d0f1500d9357efa8c996f7967779d8fdf3535e70ba455efd7a1d02ae27d01e20466fc0f26615f322337dec6897d2aee4746ea869056ad835231edb6e0c9d535
+  checksum: 10c0/338ed82f716fa751e111b26b594c5197a5fba8644674f8e841077d26744577dbe89c118e5f8248b142fbf131556f594a6970ce7c2d833f408b367d68ef30efec
   languageName: node
   linkType: hard
 

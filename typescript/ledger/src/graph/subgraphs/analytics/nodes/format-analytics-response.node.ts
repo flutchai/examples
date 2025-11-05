@@ -18,7 +18,7 @@ export class FormatAnalyticsResponseNode {
 
   async execute(
     state: AnalyticsStateValues,
-    config: LangGraphRunnableConfig
+    config: LangGraphRunnableConfig,
   ): Promise<Partial<AnalyticsStateValues>> {
     this.logger.log(`[ANALYTICS] Formatting response for: ${state.query}`);
 
@@ -53,7 +53,7 @@ Format your response in a clear, professional manner suitable for a financial re
 
       const response = await model.invoke(
         [new HumanMessage(formattingPrompt)],
-        config
+        config,
       );
 
       const analyticsResult = response.content.toString();

@@ -15,7 +15,7 @@ const logger = new Logger("DatabaseModule");
       useFactory: async (): Promise<Connection> => {
         const mongoUri = ENV_CONFIG.database.mongoUri;
         logger.log(
-          `Connecting to MongoDB: ${mongoUri?.substring(0, 50) + "..."}`
+          `Connecting to MongoDB: ${mongoUri?.substring(0, 50) + "..."}`,
         );
         try {
           await mongoose.connect(mongoUri, {

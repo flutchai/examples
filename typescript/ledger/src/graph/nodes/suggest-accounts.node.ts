@@ -13,12 +13,12 @@ export class SuggestAccountsNode {
 
   constructor(
     private readonly accountService: AccountService,
-    private readonly accountIntelligence: AccountIntelligenceService
+    private readonly accountIntelligence: AccountIntelligenceService,
   ) {}
 
   async execute(
     state: WorkflowStateValues,
-    config: LangGraphRunnableConfig<any>
+    config: LangGraphRunnableConfig<any>,
   ): Promise<Partial<WorkflowStateValues>> {
     this.logger.log("Suggesting accounts for transaction using LLM analysis");
 
@@ -71,11 +71,11 @@ export class SuggestAccountsNode {
           existingAccounts,
           modelSettings,
           (config as any)?.configurable?.context?.usageRecorder,
-          currentDate
+          currentDate,
         );
 
       this.logger.log(
-        `Account analysis complete: ${analysis.recommendation.action}, confidence: ${analysis.recommendation.confidence}`
+        `Account analysis complete: ${analysis.recommendation.action}, confidence: ${analysis.recommendation.confidence}`,
       );
 
       // Handle analysis result
@@ -99,7 +99,7 @@ export class SuggestAccountsNode {
   private async handleAnalysisResult(
     state: WorkflowStateValues,
     analysis: AccountAnalysis,
-    existingAccounts: any[]
+    existingAccounts: any[],
   ): Promise<Partial<WorkflowStateValues>> {
     const txnCurrency =
       state.parsedIntent?.currency ||
@@ -112,14 +112,14 @@ export class SuggestAccountsNode {
       this.logger.log("Using existing accounts based on LLM recommendation");
 
       const debitAccount = existingAccounts.find(
-        acc =>
+        (acc) =>
           acc.accountCode ===
-          analysis.suggestedAccounts.debitAccount.existingAccountCode
+          analysis.suggestedAccounts.debitAccount.existingAccountCode,
       );
       const creditAccount = existingAccounts.find(
-        acc =>
+        (acc) =>
           acc.accountCode ===
-          analysis.suggestedAccounts.creditAccount.existingAccountCode
+          analysis.suggestedAccounts.creditAccount.existingAccountCode,
       );
 
       return {
@@ -147,7 +147,7 @@ export class SuggestAccountsNode {
     // Case 2: Create new accounts
     if (analysis.recommendation.action === "create_new") {
       this.logger.log(
-        "New accounts will be created - proceeding to build transaction"
+        "New accounts will be created - proceeding to build transaction",
       );
 
       const debitAccount =
@@ -190,9 +190,9 @@ export class SuggestAccountsNode {
     // Resolve debit account
     const existingDebitAccount = hasExistingDebit
       ? existingAccounts.find(
-          acc =>
+          (acc) =>
             acc.accountCode ===
-            analysis.suggestedAccounts.debitAccount.existingAccountCode
+            analysis.suggestedAccounts.debitAccount.existingAccountCode,
         )
       : null;
 
@@ -203,9 +203,9 @@ export class SuggestAccountsNode {
     // Resolve credit account
     const existingCreditAccount = hasExistingCredit
       ? existingAccounts.find(
-          acc =>
+          (acc) =>
             acc.accountCode ===
-            analysis.suggestedAccounts.creditAccount.existingAccountCode
+            analysis.suggestedAccounts.creditAccount.existingAccountCode,
         )
       : null;
 

@@ -24,7 +24,7 @@ export class JournalEntryService {
   constructor(
     private readonly journalEntryRepository: JournalEntryRepository,
     private readonly accountRepository: AccountRepository,
-    private readonly exchangeRateService: ExchangeRateService
+    private readonly exchangeRateService: ExchangeRateService,
   ) {}
 
   async createJournalEntry(
@@ -35,11 +35,11 @@ export class JournalEntryService {
         string,
         { name: string; type: string; currency: string; parentCode?: string }
       >;
-    }
+    },
   ): Promise<JournalEntry> {
     if (process.env.NODE_ENV === "development") {
       this.logger.debug(
-        `Creating journal entry for user: ${dto.userId}, skipValidation: ${options?.skipAccountValidation}`
+        `Creating journal entry for user: ${dto.userId}, skipValidation: ${options?.skipAccountValidation}`,
       );
     }
 
@@ -49,7 +49,7 @@ export class JournalEntryService {
     });
     if (!validation.isValid) {
       throw new BadRequestException(
-        `Invalid journal entry: ${validation.errors.join(", ")}`
+        `Invalid journal entry: ${validation.errors.join(", ")}`,
       );
     }
 
@@ -58,7 +58,7 @@ export class JournalEntryService {
       dto.entries.map(async (entry, index) => {
         // Check if this account is pending (will be created later)
         const pendingData = options?.pendingAccountsData?.get(
-          entry.accountCode
+          entry.accountCode,
         );
 
         if (pendingData) {
@@ -80,11 +80,11 @@ export class JournalEntryService {
         // Normal flow: resolve existing account
         const account = await this.accountRepository.findByCode(
           entry.accountCode,
-          dto.userId
+          dto.userId,
         );
         if (!account) {
           throw new BadRequestException(
-            `Account ${entry.accountCode} not found`
+            `Account ${entry.accountCode} not found`,
           );
         }
 
@@ -96,7 +96,7 @@ export class JournalEntryService {
           lineNumber: index + 1,
           currency: entry.currency || account.currency,
         };
-      })
+      }),
     );
 
     // Cast enrichedEntries to any since they contain accountId instead of accountCode
@@ -121,14 +121,14 @@ export class JournalEntryService {
    * Used for checking transaction history efficiently
    */
   async getStatusesByIds(
-    journalEntryIds: string[]
+    journalEntryIds: string[],
   ): Promise<Record<string, JournalEntryStatus>> {
     if (journalEntryIds.length === 0) {
       return {};
     }
 
     this.logger.debug(
-      `Getting statuses for ${journalEntryIds.length} journal entries`
+      `Getting statuses for ${journalEntryIds.length} journal entries`,
     );
 
     const entries =
@@ -139,13 +139,13 @@ export class JournalEntryService {
         acc[entry.journalEntryId] = entry.status;
         return acc;
       },
-      {} as Record<string, JournalEntryStatus>
+      {} as Record<string, JournalEntryStatus>,
     );
   }
 
   async updateJournalEntry(
     journalEntryId: string,
-    updateDto: UpdateJournalEntryDto
+    updateDto: UpdateJournalEntryDto,
   ): Promise<JournalEntry> {
     const entry =
       await this.journalEntryRepository.findByJournalEntryId(journalEntryId);
@@ -164,11 +164,11 @@ export class JournalEntryService {
         updateDto.entries.map(async (entryDto, index) => {
           const account = await this.accountRepository.findByCode(
             entryDto.accountCode,
-            entry.userId
+            entry.userId,
           );
           if (!account) {
             throw new BadRequestException(
-              `Account ${entryDto.accountCode} not found`
+              `Account ${entryDto.accountCode} not found`,
             );
           }
 
@@ -180,7 +180,7 @@ export class JournalEntryService {
             lineNumber: index + 1,
             currency: entryDto.currency || entry.currency,
           };
-        })
+        }),
       );
 
       // Validate the updated journal entry
@@ -192,7 +192,7 @@ export class JournalEntryService {
 
       if (!validation.isValid) {
         throw new BadRequestException(
-          `Invalid journal entry: ${validation.errors.join(", ")}`
+          `Invalid journal entry: ${validation.errors.join(", ")}`,
         );
       }
 
@@ -206,13 +206,13 @@ export class JournalEntryService {
     userId: string,
     status?: JournalEntryStatus,
     limit: number = 50,
-    offset: number = 0
+    offset: number = 0,
   ): Promise<JournalEntry[]> {
     return this.journalEntryRepository.findByUser(
       userId,
       status,
       limit,
-      offset
+      offset,
     );
   }
 
@@ -255,7 +255,7 @@ export class JournalEntryService {
 
       for (const line of entry.entries) {
         const account = await this.accountRepository.findById(
-          line.accountId.toString()
+          line.accountId.toString(),
         );
         if (!account) {
           throw new Error(`Account with ID ${line.accountId} not found`);
@@ -266,7 +266,7 @@ export class JournalEntryService {
         if (line.currency && line.currency !== account.currency) {
           const rate = await this.exchangeRateService.getRate(
             line.currency,
-            account.currency
+            account.currency,
           );
           debit = debit * rate;
           credit = credit * rate;
@@ -282,7 +282,7 @@ export class JournalEntryService {
 
         await this.accountRepository.incrementBalance(
           account._id.toString(),
-          balanceChange
+          balanceChange,
         );
         affectedAccountCodes.push(account.accountCode);
       }
@@ -298,7 +298,7 @@ export class JournalEntryService {
     } catch (error) {
       this.logger.error(
         `Failed to post journal entry ${journalEntryId}:`,
-        error
+        error,
       );
       return {
         success: false,
@@ -310,14 +310,14 @@ export class JournalEntryService {
 
   async reverseJournalEntry(
     journalEntryId: string,
-    reversalReason: string
+    reversalReason: string,
   ): Promise<TransactionResult> {
     this.logger.log(`Reversing journal entry: ${journalEntryId}`);
 
     try {
       const result = await this.journalEntryRepository.reverse(
         journalEntryId,
-        reversalReason
+        reversalReason,
       );
 
       // Update account balances for the reversal
@@ -325,7 +325,7 @@ export class JournalEntryService {
 
       for (const line of result.reversal.entries) {
         const account = await this.accountRepository.findById(
-          line.accountId.toString()
+          line.accountId.toString(),
         );
         if (!account) {
           throw new Error(`Account with ID ${line.accountId} not found`);
@@ -341,7 +341,7 @@ export class JournalEntryService {
 
         await this.accountRepository.incrementBalance(
           account._id.toString(),
-          balanceChange
+          balanceChange,
         );
         affectedAccountCodes.push(account.accountCode);
       }
@@ -354,7 +354,7 @@ export class JournalEntryService {
     } catch (error) {
       this.logger.error(
         `Failed to reverse journal entry ${journalEntryId}:`,
-        error
+        error,
       );
       return {
         success: false,
@@ -368,19 +368,19 @@ export class JournalEntryService {
     userId: string,
     accountCode: string,
     fromDate?: Date,
-    toDate?: Date
+    toDate?: Date,
   ): Promise<JournalEntry[]> {
     return this.journalEntryRepository.getAccountActivity(
       userId,
       accountCode,
       fromDate,
-      toDate
+      toDate,
     );
   }
 
   async validateJournalEntry(
     dto: CreateJournalEntryDto,
-    options?: { skipAccountExistenceCheck?: boolean }
+    options?: { skipAccountExistenceCheck?: boolean },
   ): Promise<ValidationResult> {
     const errors: string[] = [];
     const warnings: string[] = [];
@@ -389,23 +389,23 @@ export class JournalEntryService {
       errors.push("Journal entry must have at least one line");
     } else if (dto.entries.length === 1) {
       errors.push(
-        "Journal entry must have at least two lines (debit and credit)"
+        "Journal entry must have at least two lines (debit and credit)",
       );
     }
 
     // Calculate totals
     const totalDebit = dto.entries.reduce(
       (sum, entry) => sum + entry.debitAmount,
-      0
+      0,
     );
     const totalCredit = dto.entries.reduce(
       (sum, entry) => sum + entry.creditAmount,
-      0
+      0,
     );
 
     if (Math.abs(totalDebit - totalCredit) > 0.01) {
       errors.push(
-        `Journal entry is not balanced: Debit=${totalDebit}, Credit=${totalCredit}`
+        `Journal entry is not balanced: Debit=${totalDebit}, Credit=${totalCredit}`,
       );
     }
 
@@ -415,13 +415,13 @@ export class JournalEntryService {
 
       if (entry.debitAmount > 0 && entry.creditAmount > 0) {
         errors.push(
-          `Line ${i + 1}: Entry cannot have both debit and credit amounts`
+          `Line ${i + 1}: Entry cannot have both debit and credit amounts`,
         );
       }
 
       if (entry.debitAmount === 0 && entry.creditAmount === 0) {
         errors.push(
-          `Line ${i + 1}: Entry must have either debit or credit amount`
+          `Line ${i + 1}: Entry must have either debit or credit amount`,
         );
       }
 
@@ -433,7 +433,7 @@ export class JournalEntryService {
       if (!options?.skipAccountExistenceCheck) {
         const account = await this.accountRepository.findByCode(
           entry.accountCode,
-          dto.userId
+          dto.userId,
         );
         if (!account) {
           errors.push(`Line ${i + 1}: Account ${entry.accountCode} not found`);
@@ -453,7 +453,7 @@ export class JournalEntryService {
   }
 
   async getJournalEntriesByReference(
-    reference: string
+    reference: string,
   ): Promise<JournalEntry[]> {
     return this.journalEntryRepository.findByReference(reference);
   }
@@ -461,12 +461,12 @@ export class JournalEntryService {
   async getJournalEntriesInDateRange(
     userId: string,
     fromDate: Date,
-    toDate: Date
+    toDate: Date,
   ): Promise<JournalEntry[]> {
     return this.journalEntryRepository.findByDateRange(
       userId,
       fromDate,
-      toDate
+      toDate,
     );
   }
 
@@ -479,7 +479,7 @@ export class JournalEntryService {
 
     if (entry.entries && entry.entries.length === 1) {
       errors.push(
-        "Journal entry must have at least two lines (debit and credit)"
+        "Journal entry must have at least two lines (debit and credit)",
       );
     }
 
@@ -488,7 +488,7 @@ export class JournalEntryService {
     const totalCredit = entry.totalCredit || 0;
     if (Math.abs(totalDebit - totalCredit) >= 0.01) {
       errors.push(
-        `Journal entry is not balanced: Debit=${totalDebit}, Credit=${totalCredit}`
+        `Journal entry is not balanced: Debit=${totalDebit}, Credit=${totalCredit}`,
       );
     }
 

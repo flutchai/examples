@@ -14,7 +14,7 @@ export class WorkflowMonitor {
   static logNodeEntry(
     nodeName: string,
     state: WorkflowStateValues,
-    config: LangGraphRunnableConfig<any>
+    config: LangGraphRunnableConfig<any>,
   ): void {
     const stateInfo = {
       node: nodeName,
@@ -55,7 +55,7 @@ export class WorkflowMonitor {
     };
 
     this.logger.log(
-      `[${nodeName.toUpperCase()}_ENTRY] ${JSON.stringify(stateInfo, null, 2)}`
+      `[${nodeName.toUpperCase()}_ENTRY] ${JSON.stringify(stateInfo, null, 2)}`,
     );
   }
 
@@ -66,7 +66,7 @@ export class WorkflowMonitor {
     nodeName: string,
     state: WorkflowStateValues,
     result: Partial<WorkflowStateValues>,
-    config: LangGraphRunnableConfig<any>
+    config: LangGraphRunnableConfig<any>,
   ): void {
     const exitInfo = {
       node: nodeName,
@@ -90,7 +90,7 @@ export class WorkflowMonitor {
     };
 
     this.logger.log(
-      `[${nodeName.toUpperCase()}_EXIT] ${JSON.stringify(exitInfo, null, 2)}`
+      `[${nodeName.toUpperCase()}_EXIT] ${JSON.stringify(exitInfo, null, 2)}`,
     );
   }
 
@@ -101,7 +101,7 @@ export class WorkflowMonitor {
     fromNode: string,
     state: WorkflowStateValues,
     decision: string,
-    reasoning?: string
+    reasoning?: string,
   ): void {
     const conditionInfo = {
       fromNode,
@@ -115,7 +115,7 @@ export class WorkflowMonitor {
     };
 
     this.logger.log(
-      `[WORKFLOW_CONDITION] ${JSON.stringify(conditionInfo, null, 2)}`
+      `[WORKFLOW_CONDITION] ${JSON.stringify(conditionInfo, null, 2)}`,
     );
   }
 
@@ -127,7 +127,7 @@ export class WorkflowMonitor {
     callbackType: string,
     callbackId: string,
     state: WorkflowStateValues,
-    config: LangGraphRunnableConfig<any>
+    config: LangGraphRunnableConfig<any>,
   ): void {
     const callbackInfo = {
       node: nodeName,
@@ -142,7 +142,7 @@ export class WorkflowMonitor {
     };
 
     this.logger.log(
-      `[CALLBACK_CREATED] ${JSON.stringify(callbackInfo, null, 2)}`
+      `[CALLBACK_CREATED] ${JSON.stringify(callbackInfo, null, 2)}`,
     );
   }
 
@@ -152,7 +152,7 @@ export class WorkflowMonitor {
   static logWorkflowIssue(
     issue: string,
     context: any,
-    severity: "WARN" | "ERROR" = "WARN"
+    severity: "WARN" | "ERROR" = "WARN",
   ): void {
     const issueInfo = {
       issue,
@@ -163,11 +163,11 @@ export class WorkflowMonitor {
 
     if (severity === "ERROR") {
       this.logger.error(
-        `[WORKFLOW_ISSUE] ${JSON.stringify(issueInfo, null, 2)}`
+        `[WORKFLOW_ISSUE] ${JSON.stringify(issueInfo, null, 2)}`,
       );
     } else {
       this.logger.warn(
-        `[WORKFLOW_ISSUE] ${JSON.stringify(issueInfo, null, 2)}`
+        `[WORKFLOW_ISSUE] ${JSON.stringify(issueInfo, null, 2)}`,
       );
     }
   }
@@ -178,7 +178,7 @@ export class WorkflowMonitor {
   static validateWorkflowState(
     nodeName: string,
     state: WorkflowStateValues,
-    config: LangGraphRunnableConfig<any>
+    config: LangGraphRunnableConfig<any>,
   ): void {
     const issues: string[] = [];
 
@@ -204,7 +204,7 @@ export class WorkflowMonitor {
           threadId: config.configurable?.thread_id,
           currentStep: state.progress?.currentStep,
         },
-        "WARN"
+        "WARN",
       );
     }
   }

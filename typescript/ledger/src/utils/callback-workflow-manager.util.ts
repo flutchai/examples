@@ -22,7 +22,7 @@ export class CallbackWorkflowManager {
       callbackType: string;
       callbackParams: any;
       workflowMetadata?: any;
-    }
+    },
   ): Promise<string> {
     const callbackId = await callbackStore.issue({
       graphType: params.graphType,
@@ -39,7 +39,7 @@ export class CallbackWorkflowManager {
     });
 
     this.logger.log(
-      `Created workflow callback: ${callbackId} for ${params.callbackType}`
+      `Created workflow callback: ${callbackId} for ${params.callbackType}`,
     );
 
     return callbackId;
@@ -51,12 +51,12 @@ export class CallbackWorkflowManager {
   static validateCallbackResumption(
     callbackId: string,
     expectedType: string,
-    threadId: string
+    threadId: string,
   ): boolean {
     // This would integrate with your callback store to validate
     // For now, just log the validation attempt
     this.logger.log(
-      `Validating callback resumption: ${callbackId}, type: ${expectedType}, thread: ${threadId}`
+      `Validating callback resumption: ${callbackId}, type: ${expectedType}, thread: ${threadId}`,
     );
     return true;
   }
@@ -67,7 +67,7 @@ export class CallbackWorkflowManager {
   static createWorkflowContinuationState(
     originalState: WorkflowStateValues,
     callbackResult: any,
-    nextStep: string
+    nextStep: string,
   ): Partial<WorkflowStateValues> {
     const continuationState = {
       ...originalState,
@@ -99,11 +99,11 @@ export class CallbackWorkflowManager {
   static handleWorkflowTimeout(
     threadId: string,
     waitingFor: string,
-    timeoutMinutes: number = 30
+    timeoutMinutes: number = 30,
   ): void {
     // This would be called by a scheduler to handle stuck workflows
     this.logger.warn(
-      `Workflow timeout detected: thread ${threadId}, waiting for ${waitingFor}, timeout: ${timeoutMinutes}min`
+      `Workflow timeout detected: thread ${threadId}, waiting for ${waitingFor}, timeout: ${timeoutMinutes}min`,
     );
 
     // Could implement:

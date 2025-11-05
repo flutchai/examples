@@ -24,7 +24,7 @@ export class WorkflowExecutionGuard {
   static shouldAllowExecution(
     requestId: string,
     threadId: string,
-    operationType: "start" | "continue" | "callback"
+    operationType: "start" | "continue" | "callback",
   ): boolean {
     const key = `${threadId}:${requestId}`;
     const existing = this.activeWorkflows.get(key);
@@ -42,7 +42,7 @@ export class WorkflowExecutionGuard {
       existing.status === "waiting_callback"
     ) {
       this.logger.warn(
-        `Preventing rapid restart loop for ${key}, last activity: ${timeSinceLastActivity}ms ago`
+        `Preventing rapid restart loop for ${key}, last activity: ${timeSinceLastActivity}ms ago`,
       );
       return false;
     }
@@ -59,7 +59,7 @@ export class WorkflowExecutionGuard {
       timeSinceLastActivity > 5000
     ) {
       this.logger.log(
-        `Allowing workflow continuation after timeout for ${key}`
+        `Allowing workflow continuation after timeout for ${key}`,
       );
       this.updateWorkflowStatus(requestId, threadId, "running");
       return true;
@@ -68,7 +68,7 @@ export class WorkflowExecutionGuard {
     // Prevent duplicate starts
     if (existing.status === "running" && timeSinceLastActivity < 10000) {
       this.logger.warn(
-        `Preventing duplicate execution for ${key}, status: ${existing.status}`
+        `Preventing duplicate execution for ${key}, status: ${existing.status}`,
       );
       return false;
     }
@@ -84,7 +84,7 @@ export class WorkflowExecutionGuard {
   static registerWorkflow(
     requestId: string,
     threadId: string,
-    status: "running" | "waiting_callback" | "completed"
+    status: "running" | "waiting_callback" | "completed",
   ): void {
     const key = `${threadId}:${requestId}`;
     const now = new Date();
@@ -107,7 +107,7 @@ export class WorkflowExecutionGuard {
     requestId: string,
     threadId: string,
     status: "running" | "waiting_callback" | "completed",
-    callbackId?: string
+    callbackId?: string,
   ): void {
     const key = `${threadId}:${requestId}`;
     const existing = this.activeWorkflows.get(key);
@@ -120,7 +120,7 @@ export class WorkflowExecutionGuard {
       }
 
       this.logger.log(
-        `Updated workflow ${key}: status=${status}, callbackId=${callbackId}`
+        `Updated workflow ${key}: status=${status}, callbackId=${callbackId}`,
       );
 
       // Clean up completed workflows after 5 minutes
@@ -130,7 +130,7 @@ export class WorkflowExecutionGuard {
             this.activeWorkflows.delete(key);
             this.logger.log(`Cleaned up completed workflow: ${key}`);
           },
-          5 * 60 * 1000
+          5 * 60 * 1000,
         );
       }
     }
@@ -142,13 +142,13 @@ export class WorkflowExecutionGuard {
   static setWaitingForCallback(
     requestId: string,
     threadId: string,
-    callbackId: string
+    callbackId: string,
   ): void {
     this.updateWorkflowStatus(
       requestId,
       threadId,
       "waiting_callback",
-      callbackId
+      callbackId,
     );
   }
 
@@ -221,5 +221,5 @@ setInterval(
   () => {
     WorkflowExecutionGuard.cleanupOldWorkflows();
   },
-  15 * 60 * 1000
+  15 * 60 * 1000,
 );

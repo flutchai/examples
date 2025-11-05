@@ -18,15 +18,15 @@ export class CreateTransactionsNode {
 
   constructor(
     private readonly accountService: AccountService,
-    private readonly journalEntryService: JournalEntryService
+    private readonly journalEntryService: JournalEntryService,
   ) {}
 
   async execute(
     state: TransactionStateValues,
-    _config: LangGraphRunnableConfig<LedgerGraphConfigValues>
+    _config: LangGraphRunnableConfig<LedgerGraphConfigValues>,
   ): Promise<Partial<TransactionStateValues>> {
     this.logger.log(
-      `Creating ${state.confirmedTransactions.length} transaction(s)`
+      `Creating ${state.confirmedTransactions.length} transaction(s)`,
     );
 
     try {
@@ -36,7 +36,7 @@ export class CreateTransactionsNode {
       // Step 1: Create new accounts if needed
       if (state.newAccountsNeeded.length > 0) {
         this.logger.log(
-          `Creating ${state.newAccountsNeeded.length} new accounts`
+          `Creating ${state.newAccountsNeeded.length} new accounts`,
         );
 
         for (const accountSpec of state.newAccountsNeeded) {
@@ -50,14 +50,14 @@ export class CreateTransactionsNode {
           });
 
           this.logger.log(
-            `Created account: ${accountSpec.code} - ${accountSpec.name}`
+            `Created account: ${accountSpec.code} - ${accountSpec.name}`,
           );
         }
       }
 
       // Step 2: Create all journal entries
       this.logger.log(
-        `Creating ${state.confirmedTransactions.length} journal entries`
+        `Creating ${state.confirmedTransactions.length} journal entries`,
       );
 
       for (const tx of state.confirmedTransactions) {
@@ -86,25 +86,25 @@ export class CreateTransactionsNode {
         createdJournalEntryIds.push(journalEntry._id.toString());
 
         this.logger.log(
-          `Created journal entry: ${journalEntry._id} - ${tx.description} (${tx.amount} ${tx.currency})`
+          `Created journal entry: ${journalEntry._id} - ${tx.description} (${tx.amount} ${tx.currency})`,
         );
       }
 
       // Build success message
       const successMessage = this.buildSuccessMessage(
         state,
-        createdJournalEntryIds.length
+        createdJournalEntryIds.length,
       );
 
       // Build attachment card with transaction details
       const attachment = this.buildTransactionCard(
         state,
-        createdJournalEntryIds
+        createdJournalEntryIds,
       );
 
       this.logger.log(
         `Transaction creation complete. Created ${state.newAccountsNeeded.length} accounts ` +
-          `and ${createdJournalEntryIds.length} journal entries`
+          `and ${createdJournalEntryIds.length} journal entries`,
       );
 
       return {
@@ -131,12 +131,12 @@ export class CreateTransactionsNode {
    */
   private buildSuccessMessage(
     state: TransactionStateValues,
-    transactionCount: number
+    transactionCount: number,
   ): string {
     const accountCount = state.newAccountsNeeded.length;
     const totalAmount = state.confirmedTransactions.reduce(
       (sum, tx) => sum + tx.amount,
-      0
+      0,
     );
     const currency = state.confirmedTransactions[0]?.currency || "USD";
 
@@ -156,12 +156,12 @@ export class CreateTransactionsNode {
    */
   private buildTransactionCard(
     state: TransactionStateValues,
-    journalEntryIds: string[]
+    journalEntryIds: string[],
   ): any {
     const isBatch = state.confirmedTransactions.length > 1;
     const totalAmount = state.confirmedTransactions.reduce(
       (sum, tx) => sum + tx.amount,
-      0
+      0,
     );
     const currency = state.confirmedTransactions[0]?.currency || "USD";
 
@@ -227,7 +227,7 @@ export class CreateTransactionsNode {
     // Add new accounts if any were created
     if (state.newAccountsNeeded.length > 0) {
       const accountsList = state.newAccountsNeeded
-        .map(acc => `${acc.code} - ${acc.name} (${acc.type})`)
+        .map((acc) => `${acc.code} - ${acc.name} (${acc.type})`)
         .join("\n");
 
       fields.push({
@@ -239,9 +239,7 @@ export class CreateTransactionsNode {
     return {
       type: "card",
       value: {
-        title: isBatch
-          ? "✅ Transactions Created"
-          : "✅ Transaction Created",
+        title: isBatch ? "✅ Transactions Created" : "✅ Transaction Created",
         fields,
         metadata: {
           cardType: isBatch

@@ -19,7 +19,7 @@ export class PresentResultNode {
 
   async execute(
     state: TransactionStateValues,
-    config?: LangGraphRunnableConfig<any>
+    config?: LangGraphRunnableConfig<any>,
   ): Promise<Partial<TransactionStateValues>> {
     this.logger.log("Presenting transaction result");
 
@@ -47,7 +47,7 @@ export class PresentResultNode {
       const streamingMessage = await this.generateStreamingMessage(
         state,
         model,
-        config
+        config,
       );
 
       // Create AI message with metadata
@@ -77,7 +77,7 @@ export class PresentResultNode {
   private async generateStreamingMessage(
     state: TransactionStateValues,
     model: any,
-    config: LangGraphRunnableConfig<any>
+    config: LangGraphRunnableConfig<any>,
   ): Promise<string> {
     const transactionCount = state.createdJournalEntryIds?.length || 0;
     const accountsCreated = state.newAccountsNeeded?.length || 0;
@@ -90,7 +90,7 @@ export class PresentResultNode {
       transactionCount,
       accountsCreated,
       needsConfirmation,
-      state
+      state,
     );
 
     const result = await model.invoke(
@@ -99,7 +99,7 @@ export class PresentResultNode {
         ...state.messages,
         new HumanMessage(userPrompt),
       ],
-      config
+      config,
     );
 
     return result.content.toString();
@@ -123,7 +123,7 @@ Guidelines:
     transactionCount: number,
     accountsCreated: number,
     needsConfirmation: boolean,
-    state: TransactionStateValues
+    state: TransactionStateValues,
   ): string {
     const isBatch = transactionCount > 1;
 
@@ -166,7 +166,7 @@ Generate a message explaining that new account(s) will be created and asking for
   }
 
   private generateErrorResponse(
-    state: TransactionStateValues
+    state: TransactionStateValues,
   ): Partial<TransactionStateValues> {
     const errorMessage =
       state.errorMessages?.[0] ||
@@ -181,7 +181,7 @@ Generate a message explaining that new account(s) will be created and asking for
   }
 
   private generateFallbackResponse(
-    state: TransactionStateValues
+    state: TransactionStateValues,
   ): Partial<TransactionStateValues> {
     const transactionCount = state.createdJournalEntryIds?.length || 0;
     const accountsCreated = state.newAccountsNeeded?.length || 0;

@@ -13,7 +13,7 @@ import { ReactGraphStateValidator } from "../../types/state.validator";
 let consecutivePlanRoutes = 0;
 
 export function routeFromPlanAndSelectTool(
-  state: ReactGraphStateValues
+  state: ReactGraphStateValues,
 ): string {
   // Create validator instance for routing decisions
   const validator = new ReactGraphStateValidator();
@@ -27,7 +27,7 @@ export function routeFromPlanAndSelectTool(
 
   if (currentStep >= stepBudget || consecutivePlanRoutes >= stepBudget) {
     console.warn(
-      `Emergency brake: step=${currentStep}, budget=${stepBudget}, consecutivePlans=${consecutivePlanRoutes} - forcing answer`
+      `Emergency brake: step=${currentStep}, budget=${stepBudget}, consecutivePlans=${consecutivePlanRoutes} - forcing answer`,
     );
     consecutivePlanRoutes = 0; // Reset counter
     return GraphNodeId.GENERATE_ANSWER;
@@ -48,11 +48,11 @@ export function routeFromPlanAndSelectTool(
 
     // Check for loop detection warnings
     const hasLoopWarnings = stateValidation.warnings.some(
-      warning =>
+      (warning) =>
         warning.includes("consecutive failures") ||
         warning.includes("repetition detected") ||
         warning.includes("Multiple consecutive failures") ||
-        warning.includes("Potential tool call repetition")
+        warning.includes("Potential tool call repetition"),
     );
 
     if (hasLoopWarnings) {
@@ -68,7 +68,7 @@ export function routeFromPlanAndSelectTool(
   // If validator suggests different action than current, follow validator
   if (suggestedAction !== state.nextAction) {
     console.warn(
-      `Validator suggests ${suggestedAction} instead of ${state.nextAction} - following validator`
+      `Validator suggests ${suggestedAction} instead of ${state.nextAction} - following validator`,
     );
   }
 
@@ -91,7 +91,7 @@ export function routeFromPlanAndSelectTool(
       consecutivePlanRoutes++; // Increment counter
       if (consecutivePlanRoutes >= stepBudget) {
         console.warn(
-          `Too many consecutive PLAN routes (${consecutivePlanRoutes}/${stepBudget}) - forcing answer`
+          `Too many consecutive PLAN routes (${consecutivePlanRoutes}/${stepBudget}) - forcing answer`,
         );
         consecutivePlanRoutes = 0; // Reset counter
         return GraphNodeId.GENERATE_ANSWER;
@@ -104,7 +104,7 @@ export function routeFromPlanAndSelectTool(
  * Routing strategy for reflect-and-decide node with validation
  */
 export function routeFromReflectAndDecide(
-  state: ReactGraphStateValues
+  state: ReactGraphStateValues,
 ): string {
   // Create validator instance for routing decisions
   const validator = new ReactGraphStateValidator();
@@ -123,11 +123,11 @@ export function routeFromReflectAndDecide(
 
     // Check for loop detection warnings
     const hasLoopWarnings = stateValidation.warnings.some(
-      warning =>
+      (warning) =>
         warning.includes("consecutive failures") ||
         warning.includes("repetition detected") ||
         warning.includes("Multiple consecutive failures") ||
-        warning.includes("Potential tool call repetition")
+        warning.includes("Potential tool call repetition"),
     );
 
     if (hasLoopWarnings) {
@@ -142,7 +142,7 @@ export function routeFromReflectAndDecide(
   // If validator suggests different action than current, follow validator
   if (suggestedAction !== state.nextAction) {
     console.warn(
-      `Validator suggests ${suggestedAction} instead of ${state.nextAction} - following validator`
+      `Validator suggests ${suggestedAction} instead of ${state.nextAction} - following validator`,
     );
   }
 
@@ -175,7 +175,7 @@ export function routeFromReactNode(state: ReactGraphStateValues): string {
   // Emergency brake: if budget exceeded, force answer
   if (currentStep >= stepBudget) {
     console.warn(
-      `React node: step budget exhausted (${currentStep}/${stepBudget}) - forcing answer`
+      `React node: step budget exhausted (${currentStep}/${stepBudget}) - forcing answer`,
     );
     return GraphNodeId.GENERATE_ANSWER;
   }
@@ -186,7 +186,7 @@ export function routeFromReactNode(state: ReactGraphStateValues): string {
 
   if (hasToolCalls) {
     console.debug(
-      `React node: found ${(lastMessage as any).tool_calls.length} tool calls - routing to tools`
+      `React node: found ${(lastMessage as any).tool_calls.length} tool calls - routing to tools`,
     );
     return GraphNodeId.EXECUTE_TOOL;
   }
@@ -194,7 +194,7 @@ export function routeFromReactNode(state: ReactGraphStateValues): string {
   // No tool calls - the model wants to provide a final answer
   // Let the answer node generate the structured response
   console.debug(
-    `React node: no tool calls detected - routing to answer generation`
+    `React node: no tool calls detected - routing to answer generation`,
   );
   return GraphNodeId.GENERATE_ANSWER;
 }

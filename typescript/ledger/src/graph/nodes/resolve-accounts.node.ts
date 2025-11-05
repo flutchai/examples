@@ -16,11 +16,11 @@ export class ResolveAccountsNode {
   constructor(
     private readonly accountService: AccountService,
     private readonly audit: LedgerAuditService,
-    private readonly metrics: LedgerMetrics
+    private readonly metrics: LedgerMetrics,
   ) {}
 
   async execute(
-    state: WorkflowStateValues
+    state: WorkflowStateValues,
   ): Promise<Partial<WorkflowStateValues>> {
     this.metrics.incOperations();
     this.logger.debug("Resolving accounts for transaction");
@@ -36,20 +36,20 @@ export class ResolveAccountsNode {
 
       // Ensure default accounts exist for the user
       const defaultAccounts = await this.accountService.setupDefaultAccounts(
-        state.input.userId
+        state.input.userId,
       );
 
       // Resolve accounts based on transaction - LEGACY NODE NOT USED
       const resolvedAccounts = await this.resolveAccountsForTransaction(
         TransactionType.TRANSACTION,
         state.input,
-        defaultAccounts
+        defaultAccounts,
       );
 
       // Advance to next step (legacy - not used in new architecture)
       const stepUpdate = WorkflowStateUtils.advanceStep(
         state,
-        "present_result"
+        "present_result",
       );
       const metadataUpdate = WorkflowStateUtils.updateMetadata(state, {
         accountsResolved: true,
@@ -85,11 +85,11 @@ export class ResolveAccountsNode {
   private async resolveAccountsForTransaction(
     transactionType: TransactionType,
     input: any,
-    defaultAccounts: any
+    defaultAccounts: any,
   ): Promise<ResolvedAccounts> {
     // LEGACY CODE - This node is not used. Account resolution now handled by AccountIntelligenceService
     throw new Error(
-      "ResolveAccountsNode is deprecated. Use AccountIntelligenceService for account resolution."
+      "ResolveAccountsNode is deprecated. Use AccountIntelligenceService for account resolution.",
     );
 
     /* COMMENTED OUT - OLD LOGIC
