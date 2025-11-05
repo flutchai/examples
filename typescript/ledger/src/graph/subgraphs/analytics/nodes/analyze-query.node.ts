@@ -20,7 +20,7 @@ export class AnalyzeQueryNode {
 
   async execute(
     state: AnalyticsStateValues,
-    config: LangGraphRunnableConfig
+    config: LangGraphRunnableConfig,
   ): Promise<Partial<AnalyticsStateValues>> {
     this.logger.log(`[ANALYTICS] Analyzing query: ${state.query}`);
 
@@ -64,7 +64,7 @@ Respond in JSON format:
 
       const response = await model.invoke(
         [new HumanMessage(analysisPrompt)],
-        config
+        config,
       );
 
       const content = response.content.toString();
@@ -79,7 +79,7 @@ Respond in JSON format:
         analysis = JSON.parse(jsonStr);
       } catch (parseError) {
         this.logger.warn(
-          `[ANALYTICS] Failed to parse LLM response as JSON, using defaults`
+          `[ANALYTICS] Failed to parse LLM response as JSON, using defaults`,
         );
         analysis = {
           intent: state.query,
@@ -89,7 +89,7 @@ Respond in JSON format:
       }
 
       this.logger.log(
-        `[ANALYTICS] Analysis complete - Intent: ${analysis.intent}, Tools: ${analysis.tools.join(", ")}`
+        `[ANALYTICS] Analysis complete - Intent: ${analysis.intent}, Tools: ${analysis.tools.join(", ")}`,
       );
 
       return {

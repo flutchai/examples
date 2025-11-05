@@ -22,7 +22,7 @@ export async function createLedgerCallbackButton(
   text: string,
   userId: string,
   params: Record<string, any> = {},
-  options: { threadId?: string; agentId?: string; metadata?: any } = {}
+  options: { threadId?: string; agentId?: string; metadata?: any } = {},
 ): Promise<IInlineButton> {
   const token = await store.issue({
     graphType: "ledger::1.0.0",
@@ -54,7 +54,7 @@ export async function createTransactionActionButtons(
     amount?: number;
     description?: string;
     metadata?: any;
-  } = {}
+  } = {},
 ): Promise<IInlineButton[]> {
   const baseParams = {
     transactionId,
@@ -75,7 +75,7 @@ export async function createTransactionActionButtons(
       "✅ Approve",
       userId,
       baseParams,
-      baseOptions
+      baseOptions,
     ),
     createLedgerCallbackButton(
       store,
@@ -83,7 +83,7 @@ export async function createTransactionActionButtons(
       "❌ Reject",
       userId,
       baseParams,
-      baseOptions
+      baseOptions,
     ),
     createLedgerCallbackButton(
       store,
@@ -91,7 +91,7 @@ export async function createTransactionActionButtons(
       "📊 Details",
       userId,
       { transactionId },
-      baseOptions
+      baseOptions,
     ),
   ]);
 }
@@ -108,7 +108,7 @@ export async function createCategoryButton(
     threadId?: string;
     agentId?: string;
     metadata?: any;
-  } = {}
+  } = {},
 ): Promise<IInlineButton> {
   return createLedgerCallbackButton(
     store,
@@ -116,7 +116,7 @@ export async function createCategoryButton(
     `📂 ${newCategory}`,
     userId,
     { transactionId, newCategory },
-    options
+    options,
   );
 }
 
@@ -129,7 +129,7 @@ export async function createLedgerButton(
   text: string,
   userId: string,
   params: Record<string, any> = {},
-  options: { threadId?: string; agentId?: string; metadata?: any } = {}
+  options: { threadId?: string; agentId?: string; metadata?: any } = {},
 ): Promise<IInlineButton> {
   return createLedgerCallbackButton(
     store,
@@ -137,6 +137,6 @@ export async function createLedgerButton(
     text,
     userId,
     params,
-    options
+    options,
   );
 }

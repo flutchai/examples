@@ -26,10 +26,10 @@ export class ChartBuilderTool {
   buildChart(
     data: any,
     intent: string,
-    suggestedType?: ChartType
+    suggestedType?: ChartType,
   ): IChartValue {
     this.logger.debug(
-      `Building chart with intent: "${intent}", suggested type: ${suggestedType}`
+      `Building chart with intent: "${intent}", suggested type: ${suggestedType}`,
     );
 
     // Determine chart type if not provided
@@ -128,7 +128,7 @@ export class ChartBuilderTool {
           value: totals.totalEquity,
           color: "#3b82f6",
         },
-      ].filter(p => p.value > 0);
+      ].filter((p) => p.value > 0);
 
       return {
         type: "pie",
@@ -158,7 +158,7 @@ export class ChartBuilderTool {
       { label: "Equity", value: totals.totalEquity, color: "#3b82f6" },
       { label: "Revenue", value: totals.totalRevenue, color: "#8b5cf6" },
       { label: "Expenses", value: totals.totalExpenses, color: "#f59e0b" },
-    ].filter(p => p.value > 0);
+    ].filter((p) => p.value > 0);
 
     return {
       type: "bar",
@@ -382,7 +382,7 @@ export class ChartBuilderTool {
   private buildGenericChart(
     data: any,
     chartType: ChartType,
-    title: string
+    title: string,
   ): IChartValue {
     this.logger.warn("Building generic chart for unknown data structure");
 

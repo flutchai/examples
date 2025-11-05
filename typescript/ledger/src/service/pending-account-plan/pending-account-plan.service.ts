@@ -23,14 +23,14 @@ export class PendingAccountPlanService {
     private readonly repository: PendingAccountPlanRepository,
     private readonly accountService: AccountService,
     private readonly journalEntryService: JournalEntryService,
-    @Inject("MONGO_CONNECTION") private readonly connection: Connection
+    @Inject("MONGO_CONNECTION") private readonly connection: Connection,
   ) {}
 
   async createPlan(
     userId: string,
     conversationId: string,
     accountsToCreate: PendingAccountData[],
-    transactionToCreate: TransactionData
+    transactionToCreate: TransactionData,
   ): Promise<PendingAccountPlan> {
     this.logger.log({
       message: "Creating pending account plan",
@@ -61,7 +61,7 @@ export class PendingAccountPlanService {
 
     if (plan.status !== PendingAccountPlanStatus.PENDING) {
       throw new Error(
-        `Plan ${planId} is not in PENDING status (current: ${plan.status})`
+        `Plan ${planId} is not in PENDING status (current: ${plan.status})`,
       );
     }
 
@@ -101,7 +101,7 @@ export class PendingAccountPlanService {
       await this.repository.updateStatus(
         planId,
         PendingAccountPlanStatus.CONFIRMED,
-        journalEntry._id as Types.ObjectId
+        journalEntry._id as Types.ObjectId,
       );
 
       await session.commitTransaction();
@@ -134,16 +134,16 @@ export class PendingAccountPlanService {
 
     await this.repository.updateStatus(
       planId,
-      PendingAccountPlanStatus.REJECTED
+      PendingAccountPlanStatus.REJECTED,
     );
   }
 
   async getPendingPlansByConversation(
-    conversationId: string
+    conversationId: string,
   ): Promise<PendingAccountPlan[]> {
     return this.repository.findByConversationId(
       conversationId,
-      PendingAccountPlanStatus.PENDING
+      PendingAccountPlanStatus.PENDING,
     );
   }
 

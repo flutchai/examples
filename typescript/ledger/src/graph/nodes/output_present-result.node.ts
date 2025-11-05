@@ -17,7 +17,7 @@ export class OutputPresentResultNode {
 
   async execute(
     state: WorkflowStateValues,
-    config?: LangGraphRunnableConfig<LedgerGraphConfigValues>
+    config?: LangGraphRunnableConfig<LedgerGraphConfigValues>,
   ): Promise<Partial<WorkflowStateValues>> {
     this.logger.log("Presenting result with attachment");
 
@@ -39,7 +39,7 @@ export class OutputPresentResultNode {
       const streamingMessage = await this.generateStreamingMessage(
         state,
         model,
-        config
+        config,
       );
 
       // Create AI message with metadata (including journalEntryId for history)
@@ -74,7 +74,7 @@ export class OutputPresentResultNode {
   private async generateStreamingMessage(
     state: WorkflowStateValues,
     model: any,
-    config: LangGraphRunnableConfig<LedgerGraphConfigValues>
+    config: LangGraphRunnableConfig<LedgerGraphConfigValues>,
   ): Promise<string> {
     const requestType = state.metadata?.requestType || "TRANSACTION";
     const attachmentType = state.attachment?.type || "unknown";
@@ -89,7 +89,7 @@ export class OutputPresentResultNode {
         ...state.messages,
         new HumanMessage(userPrompt),
       ],
-      config
+      config,
     );
 
     return result.content.toString();
@@ -97,7 +97,7 @@ export class OutputPresentResultNode {
 
   private buildSystemPrompt(
     requestType: string,
-    attachmentType: string
+    attachmentType: string,
   ): string {
     return `You are a friendly financial assistant. Generate a brief, natural message for the user.
 
@@ -115,7 +115,7 @@ Guidelines:
 
   private buildUserPrompt(
     state: WorkflowStateValues,
-    requestType: string
+    requestType: string,
   ): string {
     // Check if this needs confirmation
     const needsConfirmation =
@@ -133,7 +133,7 @@ Guidelines:
       state.attachment?.value?.metadata?.cardType ===
         "transaction_confirmation";
     const newAccountsInfo = state.attachment?.value?.fields?.find(
-      f => f.label === "New Accounts"
+      (f) => f.label === "New Accounts",
     );
 
     if (requestType === "TRANSACTION") {
@@ -171,7 +171,7 @@ Generate a message explaining that a new account will be created and asking for 
   }
 
   private generateFallbackResponse(
-    state: WorkflowStateValues
+    state: WorkflowStateValues,
   ): Partial<WorkflowStateValues> {
     // Check if we have a success message from subgraph (e.g., from CreateTransactionsNode)
     if (state.metadata?.successMessage) {

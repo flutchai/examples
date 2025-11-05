@@ -13,7 +13,7 @@ export class JournalEntryRepository {
   private readonly logger = new Logger(JournalEntryRepository.name);
 
   constructor(
-    private readonly journalEntryModel: Model<JournalEntryDocument>
+    private readonly journalEntryModel: Model<JournalEntryDocument>,
   ) {}
 
   async create(dto: CreateJournalEntryDto): Promise<JournalEntry> {
@@ -25,11 +25,11 @@ export class JournalEntryRepository {
     // Calculate totals
     const totalDebit = dto.entries.reduce(
       (sum, entry) => sum + entry.debitAmount,
-      0
+      0,
     );
     const totalCredit = dto.entries.reduce(
       (sum, entry) => sum + entry.creditAmount,
-      0
+      0,
     );
 
     const journalEntry = new this.journalEntryModel({
@@ -65,20 +65,20 @@ export class JournalEntryRepository {
   }
 
   async findByJournalEntryId(
-    journalEntryId: string
+    journalEntryId: string,
   ): Promise<JournalEntry | null> {
     return this.journalEntryModel
       .findOne({ journalEntryId })
       .populate(
         "entries.accountId",
-        "accountCode accountName accountType normalBalance currency"
+        "accountCode accountName accountType normalBalance currency",
       )
       .exec();
   }
 
   async update(
     journalEntryId: string,
-    updateDto: UpdateJournalEntryDto
+    updateDto: UpdateJournalEntryDto,
   ): Promise<JournalEntry | null> {
     const updateData: any = { ...updateDto };
 
@@ -86,11 +86,11 @@ export class JournalEntryRepository {
     if (updateDto.entries) {
       const totalDebit = updateDto.entries.reduce(
         (sum, entry) => sum + entry.debitAmount,
-        0
+        0,
       );
       const totalCredit = updateDto.entries.reduce(
         (sum, entry) => sum + entry.creditAmount,
-        0
+        0,
       );
 
       updateData.totalDebit = totalDebit;
@@ -101,7 +101,7 @@ export class JournalEntryRepository {
       .findByIdAndUpdate(
         journalEntryId,
         { ...updateData, updatedAt: new Date() },
-        { new: true }
+        { new: true },
       )
       .exec();
   }
@@ -110,7 +110,7 @@ export class JournalEntryRepository {
     userId: string,
     status?: JournalEntryStatus,
     limit: number = 50,
-    offset: number = 0
+    offset: number = 0,
   ): Promise<JournalEntry[]> {
     const query: any = { userId };
     if (status) {
@@ -121,7 +121,7 @@ export class JournalEntryRepository {
       .find(query)
       .populate(
         "entries.accountId",
-        "accountCode accountName accountType normalBalance currency"
+        "accountCode accountName accountType normalBalance currency",
       )
       .sort({ date: -1, createdAt: -1 })
       .limit(limit)
@@ -134,7 +134,7 @@ export class JournalEntryRepository {
       .find({ reference })
       .populate(
         "entries.accountId",
-        "accountCode accountName accountType normalBalance currency"
+        "accountCode accountName accountType normalBalance currency",
       )
       .exec();
   }
@@ -142,7 +142,7 @@ export class JournalEntryRepository {
   async findByDateRange(
     userId: string,
     fromDate: Date,
-    toDate: Date
+    toDate: Date,
   ): Promise<JournalEntry[]> {
     return this.journalEntryModel
       .find({
@@ -151,7 +151,7 @@ export class JournalEntryRepository {
       })
       .populate(
         "entries.accountId",
-        "accountCode accountName accountType normalBalance currency"
+        "accountCode accountName accountType normalBalance currency",
       )
       .sort({ date: -1 })
       .exec();
@@ -167,14 +167,14 @@ export class JournalEntryRepository {
           status: JournalEntryStatus.POSTED,
           postedAt: new Date(),
         },
-        { new: true }
+        { new: true },
       )
       .exec();
   }
 
   async reverse(
     journalEntryId: string,
-    reversalReason: string
+    reversalReason: string,
   ): Promise<{ original: JournalEntry; reversal: JournalEntry }> {
     this.logger.debug(`Reversing journal entry: ${journalEntryId}`);
 
@@ -190,7 +190,7 @@ export class JournalEntryRepository {
     }
 
     // Create reversal entry with opposite amounts
-    const reversalEntries = original.entries.map(entry => ({
+    const reversalEntries = original.entries.map((entry) => ({
       accountId: entry.accountId,
       description: `REVERSAL: ${entry.description}`,
       debitAmount: entry.creditAmount, // Swap amounts
@@ -200,7 +200,7 @@ export class JournalEntryRepository {
     }));
 
     const reversalJournalEntryId = await this.generateJournalEntryId(
-      original.userId
+      original.userId,
     );
 
     const reversal = new this.journalEntryModel({
@@ -239,7 +239,7 @@ export class JournalEntryRepository {
     userId: string,
     accountCode: string,
     fromDate?: Date,
-    toDate?: Date
+    toDate?: Date,
   ): Promise<JournalEntry[]> {
     const dateFilter: any = {};
     if (fromDate) dateFilter.$gte = fromDate;
@@ -271,7 +271,7 @@ export class JournalEntryRepository {
       .find(query)
       .populate(
         "entries.accountId",
-        "accountCode accountName accountType normalBalance currency"
+        "accountCode accountName accountType normalBalance currency",
       )
       .sort({ date: -1 })
       .exec();
@@ -293,7 +293,7 @@ export class JournalEntryRepository {
     let nextNumber = 1;
     if (lastEntry) {
       const lastNumber = parseInt(
-        lastEntry.journalEntryId.split("-").pop() || "0"
+        lastEntry.journalEntryId.split("-").pop() || "0",
       );
       nextNumber = lastNumber + 1;
     }

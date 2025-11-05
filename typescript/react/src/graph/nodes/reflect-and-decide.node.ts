@@ -33,7 +33,7 @@ export class ReflectAndDecideNode {
 
   async execute(
     state: ReactGraphStateValues,
-    config?: LangGraphRunnableConfig<ReactGraphConfigValues>
+    config?: LangGraphRunnableConfig<ReactGraphConfigValues>,
   ): Promise<Partial<ReactGraphStateValues>> {
     const graphSettings: ReactGraphSettings =
       (config?.configurable?.graphSettings as ReactGraphSettings) || {};
@@ -56,7 +56,7 @@ export class ReflectAndDecideNode {
       {
         name: "react_reflect_decision",
         includeRaw: true,
-      }
+      },
     );
 
     const prompt = this.buildReflectionPrompt(state, reflectAndDecideConfig);
@@ -65,7 +65,7 @@ export class ReflectAndDecideNode {
     try {
       const structuredDecision = (await structuredReflector.invoke(
         [new SystemMessage(prompt.system), new HumanMessage(prompt.human)],
-        config
+        config,
       )) as { parsed?: z.infer<typeof ReflectionDecisionSchema> };
 
       const parsed = structuredDecision?.parsed;
@@ -208,7 +208,7 @@ export class ReflectAndDecideNode {
 
   private buildReflectionPrompt(
     state: ReactGraphStateValues,
-    config: ReflectAndDecideConfig = {}
+    config: ReflectAndDecideConfig = {},
   ) {
     const latest = state.latestObservation;
     const workingSummary = this.formatWorkingMemory(state);
@@ -267,7 +267,7 @@ Respond with valid JSON only:
     }
     return state.workingMemory
       .slice(-3)
-      .map(entry => {
+      .map((entry) => {
         const status = entry.observation.success ? "success" : "failure";
         const detail =
           entry.observation.summary || entry.observation.error || "";

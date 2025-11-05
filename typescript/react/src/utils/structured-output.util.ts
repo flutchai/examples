@@ -14,7 +14,7 @@ function normalizeContent(content: ContentLike): string {
 
   if (Array.isArray(content)) {
     return content
-      .map(part => {
+      .map((part) => {
         if (typeof part === "string") {
           return part;
         }
@@ -53,14 +53,14 @@ export function parseStructuredOutput<T>(
   content: ContentLike,
   schema: ZodSchema<T>,
   contextLabel: string,
-  logger?: Logger
+  logger?: Logger,
 ): T | null {
   const rawText = normalizeContent(content);
   const jsonPayload = extractJsonObject(rawText);
 
   if (!jsonPayload) {
     logger?.warn?.(
-      `${contextLabel}: unable to locate JSON object in model response`
+      `${contextLabel}: unable to locate JSON object in model response`,
     );
     return null;
   }

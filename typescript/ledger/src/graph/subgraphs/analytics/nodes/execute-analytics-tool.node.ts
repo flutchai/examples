@@ -20,15 +20,15 @@ export class ExecuteAnalyticsToolNode {
   constructor(
     private readonly accountService: AccountService,
     private readonly journalEntryService: JournalEntryService,
-    private readonly chartBuilder: ChartBuilderTool
+    private readonly chartBuilder: ChartBuilderTool,
   ) {}
 
   async execute(
     state: AnalyticsStateValues,
-    config: LangGraphRunnableConfig
+    config: LangGraphRunnableConfig,
   ): Promise<Partial<AnalyticsStateValues>> {
     this.logger.log(
-      `[ANALYTICS] Executing tools: ${state.toolsToExecute?.join(", ")}`
+      `[ANALYTICS] Executing tools: ${state.toolsToExecute?.join(", ")}`,
     );
 
     const toolResults: Record<string, any> = {};
@@ -45,25 +45,25 @@ export class ExecuteAnalyticsToolNode {
 
           case "get_transaction_history":
             toolResults[toolName] = await this.getTransactionHistory(
-              state.userId
+              state.userId,
             );
             break;
 
           case "calculate_period_comparison":
             toolResults[toolName] = await this.calculatePeriodComparison(
-              state.userId
+              state.userId,
             );
             break;
 
           case "analyze_spending_patterns":
             toolResults[toolName] = await this.analyzeSpendingPatterns(
-              state.userId
+              state.userId,
             );
             break;
 
           case "generate_financial_summary":
             toolResults[toolName] = await this.generateFinancialSummary(
-              state.userId
+              state.userId,
             );
             break;
 
@@ -71,7 +71,7 @@ export class ExecuteAnalyticsToolNode {
             // Generate chart from other tool results
             toolResults[toolName] = this.generateChart(
               toolResults,
-              state.analyticalIntent || state.query
+              state.analyticalIntent || state.query,
             );
             break;
 
@@ -85,7 +85,7 @@ export class ExecuteAnalyticsToolNode {
       }
 
       this.logger.log(
-        `[ANALYTICS] Tools executed: ${Object.keys(toolResults).length}`
+        `[ANALYTICS] Tools executed: ${Object.keys(toolResults).length}`,
       );
 
       return {
@@ -111,36 +111,36 @@ export class ExecuteAnalyticsToolNode {
     // Group by type
     const balancesByType = {
       assets: accounts
-        .filter(a => a.accountType === AccountType.ASSET)
-        .map(a => ({
+        .filter((a) => a.accountType === AccountType.ASSET)
+        .map((a) => ({
           code: a.accountCode,
           name: a.accountName,
           balance: a.balance,
         })),
       liabilities: accounts
-        .filter(a => a.accountType === AccountType.LIABILITY)
-        .map(a => ({
+        .filter((a) => a.accountType === AccountType.LIABILITY)
+        .map((a) => ({
           code: a.accountCode,
           name: a.accountName,
           balance: a.balance,
         })),
       equity: accounts
-        .filter(a => a.accountType === AccountType.EQUITY)
-        .map(a => ({
+        .filter((a) => a.accountType === AccountType.EQUITY)
+        .map((a) => ({
           code: a.accountCode,
           name: a.accountName,
           balance: a.balance,
         })),
       revenue: accounts
-        .filter(a => a.accountType === AccountType.REVENUE)
-        .map(a => ({
+        .filter((a) => a.accountType === AccountType.REVENUE)
+        .map((a) => ({
           code: a.accountCode,
           name: a.accountName,
           balance: a.balance,
         })),
       expenses: accounts
-        .filter(a => a.accountType === AccountType.EXPENSE)
-        .map(a => ({
+        .filter((a) => a.accountType === AccountType.EXPENSE)
+        .map((a) => ({
           code: a.accountCode,
           name: a.accountName,
           balance: a.balance,
@@ -151,23 +151,23 @@ export class ExecuteAnalyticsToolNode {
     const totals = {
       totalAssets: balancesByType.assets.reduce(
         (sum, acc) => sum + acc.balance,
-        0
+        0,
       ),
       totalLiabilities: balancesByType.liabilities.reduce(
         (sum, acc) => sum + acc.balance,
-        0
+        0,
       ),
       totalEquity: balancesByType.equity.reduce(
         (sum, acc) => sum + acc.balance,
-        0
+        0,
       ),
       totalRevenue: balancesByType.revenue.reduce(
         (sum, acc) => sum + acc.balance,
-        0
+        0,
       ),
       totalExpenses: balancesByType.expenses.reduce(
         (sum, acc) => sum + acc.balance,
-        0
+        0,
       ),
     };
 
@@ -192,12 +192,12 @@ export class ExecuteAnalyticsToolNode {
     const entries = await this.journalEntryService.getUserJournalEntries(
       userId,
       undefined,
-      limit
+      limit,
     );
 
-    const transactions = entries.map(entry => {
-      const debitEntry = entry.entries.find(e => e.debitAmount > 0);
-      const creditEntry = entry.entries.find(e => e.creditAmount > 0);
+    const transactions = entries.map((entry) => {
+      const debitEntry = entry.entries.find((e) => e.debitAmount > 0);
+      const creditEntry = entry.entries.find((e) => e.creditAmount > 0);
 
       return {
         id: entry.journalEntryId,
@@ -247,14 +247,14 @@ export class ExecuteAnalyticsToolNode {
       await this.journalEntryService.getJournalEntriesInDateRange(
         userId,
         currentMonthStart,
-        currentMonthEnd
+        currentMonthEnd,
       );
 
     const lastMonthEntries =
       await this.journalEntryService.getJournalEntriesInDateRange(
         userId,
         lastMonthStart,
-        lastMonthEnd
+        lastMonthEnd,
       );
 
     // Calculate totals
@@ -262,7 +262,7 @@ export class ExecuteAnalyticsToolNode {
       let revenue = 0;
       let expenses = 0;
 
-      entries.forEach(entry => {
+      entries.forEach((entry) => {
         entry.entries.forEach((line: any) => {
           const account = line.accountId;
           if (account?.accountType === AccountType.REVENUE) {
@@ -317,7 +317,7 @@ export class ExecuteAnalyticsToolNode {
 
     const accounts = await this.accountService.getUserAccounts(userId);
     const expenseAccounts = accounts.filter(
-      a => a.accountType === AccountType.EXPENSE
+      (a) => a.accountType === AccountType.EXPENSE,
     );
 
     // Get transactions for last 30 days
@@ -328,7 +328,7 @@ export class ExecuteAnalyticsToolNode {
     const entries = await this.journalEntryService.getJournalEntriesInDateRange(
       userId,
       startDate,
-      endDate
+      endDate,
     );
 
     // Aggregate spending by expense account
@@ -337,7 +337,7 @@ export class ExecuteAnalyticsToolNode {
       { name: string; total: number; count: number }
     > = {};
 
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       entry.entries.forEach((line: any) => {
         const account = line.accountId;
         if (account?.accountType === AccountType.EXPENSE) {
@@ -368,7 +368,7 @@ export class ExecuteAnalyticsToolNode {
 
     const totalSpending = spendingCategories.reduce(
       (sum, cat) => sum + cat.totalSpent,
-      0
+      0,
     );
 
     return {
@@ -391,26 +391,26 @@ export class ExecuteAnalyticsToolNode {
     // Calculate P&L metrics
     const totalRevenue = trialBalance.revenue.reduce(
       (sum, acc) => sum + acc.balance,
-      0
+      0,
     );
     const totalExpenses = trialBalance.expenses.reduce(
       (sum, acc) => sum + acc.balance,
-      0
+      0,
     );
     const netIncome = totalRevenue - totalExpenses;
 
     // Balance Sheet metrics
     const totalAssets = trialBalance.assets.reduce(
       (sum, acc) => sum + acc.balance,
-      0
+      0,
     );
     const totalLiabilities = trialBalance.liabilities.reduce(
       (sum, acc) => sum + acc.balance,
-      0
+      0,
     );
     const totalEquity = trialBalance.equity.reduce(
       (sum, acc) => sum + acc.balance,
-      0
+      0,
     );
 
     const netWorth = totalAssets - totalLiabilities + totalEquity;
@@ -487,11 +487,11 @@ export class ExecuteAnalyticsToolNode {
     const chart = this.chartBuilder.buildChart(
       dataSource,
       intent,
-      suggestedChartType
+      suggestedChartType,
     );
 
     this.logger.log(
-      `[TOOL] Chart generated: type=${chart.type}, title="${chart.title}"`
+      `[TOOL] Chart generated: type=${chart.type}, title="${chart.title}"`,
     );
 
     return chart;

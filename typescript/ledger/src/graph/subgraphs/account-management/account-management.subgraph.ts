@@ -45,7 +45,7 @@ export type AccountManagementStateValues = typeof AccountManagementState.State;
 export class AccountManagementSubgraph {
   constructor(
     private readonly executeToolNode: ExecuteToolNode,
-    private readonly formatResponseNode: FormatResponseNode
+    private readonly formatResponseNode: FormatResponseNode,
   ) {}
 
   build() {
@@ -57,7 +57,7 @@ export class AccountManagementSubgraph {
           metadata: {
             stream_channel: StreamChannel.PROCESSING,
           },
-        }
+        },
       )
       .addNode(
         "format_response",
@@ -66,7 +66,7 @@ export class AccountManagementSubgraph {
           metadata: {
             stream_channel: StreamChannel.TEXT,
           },
-        }
+        },
       )
       .addEdge(START, "execute_tool")
       .addEdge("execute_tool", "format_response")

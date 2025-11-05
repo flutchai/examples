@@ -36,7 +36,7 @@ export class LedgerV1Callbacks {
    */
   private getService<T>(
     context: ExtendedCallbackContext,
-    serviceClass: new (...args: any[]) => T
+    serviceClass: new (...args: any[]) => T,
   ): T {
     if (!context.builder || typeof context.builder.getService !== "function") {
       throw new Error("Builder instance not available in callback context");
@@ -49,7 +49,7 @@ export class LedgerV1Callbacks {
    */
   @Callback("approve-transaction")
   async handleApproveTransaction(
-    context: ExtendedCallbackContext
+    context: ExtendedCallbackContext,
   ): Promise<CallbackResult> {
     this.logger.log("Processing transaction approval", {
       userId: context.userId,
@@ -69,7 +69,7 @@ export class LedgerV1Callbacks {
       // Access builder methods through context
       if (context.builder) {
         this.logger.debug(
-          `Processing with builder: ${context.builder.constructor.name}`
+          `Processing with builder: ${context.builder.constructor.name}`,
         );
         // Can call builder methods, for example:
         // const validationResult = await context.builder.validateTransactionId(transactionId);
@@ -100,7 +100,7 @@ export class LedgerV1Callbacks {
    */
   @Callback("reject-transaction")
   async handleRejectTransaction(
-    context: ExtendedCallbackContext
+    context: ExtendedCallbackContext,
   ): Promise<CallbackResult> {
     this.logger.log("Processing transaction rejection", {
       userId: context.userId,
@@ -141,7 +141,7 @@ export class LedgerV1Callbacks {
    */
   @Callback("update-category")
   async handleUpdateCategory(
-    context: ExtendedCallbackContext
+    context: ExtendedCallbackContext,
   ): Promise<CallbackResult> {
     this.logger.log("Processing category update", {
       userId: context.userId,
@@ -183,7 +183,7 @@ export class LedgerV1Callbacks {
    */
   @Callback("revert-category")
   async handleRevertCategory(
-    context: ExtendedCallbackContext
+    context: ExtendedCallbackContext,
   ): Promise<CallbackResult> {
     this.logger.log("Processing category revert", {
       userId: context.userId,
@@ -217,7 +217,7 @@ export class LedgerV1Callbacks {
    */
   @Callback("get-transaction-details")
   async handleGetTransactionDetails(
-    context: ExtendedCallbackContext
+    context: ExtendedCallbackContext,
   ): Promise<CallbackResult> {
     this.logger.log("Getting transaction details", {
       userId: context.userId,
@@ -277,7 +277,7 @@ export class LedgerV1Callbacks {
    */
   @Callback("approve-transaction-with-accounts")
   async handleApproveTransactionWithAccounts(
-    context: ExtendedCallbackContext
+    context: ExtendedCallbackContext,
   ): Promise<CallbackResult> {
     this.logger.log("Processing transaction approval with new accounts", {
       userId: context.userId,
@@ -373,7 +373,7 @@ export class LedgerV1Callbacks {
    */
   @Callback("modify-account-names")
   async handleModifyAccountNames(
-    context: ExtendedCallbackContext
+    context: ExtendedCallbackContext,
   ): Promise<CallbackResult> {
     this.logger.log("Processing account name modifications", {
       userId: context.userId,
@@ -390,6 +390,15 @@ export class LedgerV1Callbacks {
         };
       }
 
+      // Validate suggestions structure
+      if (!suggestions.debitAccount || !suggestions.creditAccount) {
+        this.logger.error("Invalid suggestions structure", { suggestions });
+        return {
+          success: false,
+          error: "Invalid account suggestions structure",
+        };
+      }
+
       // Create interactive form for editing names
       const message = `
 📝 **Edit account names**
@@ -397,14 +406,14 @@ export class LedgerV1Callbacks {
 You can modify the suggested account names before creating them:
 
 **📈 Debit account:**
-Code: ${suggestions.debitAccount.newAccountSuggestion?.accountCode}
-Current name: ${suggestions.debitAccount.newAccountSuggestion?.accountName}
-Type: ${suggestions.debitAccount.newAccountSuggestion?.accountType}
+Code: ${suggestions.debitAccount?.newAccountSuggestion?.accountCode || "N/A"}
+Current name: ${suggestions.debitAccount?.newAccountSuggestion?.accountName || "N/A"}
+Type: ${suggestions.debitAccount?.newAccountSuggestion?.accountType || "N/A"}
 
 **📉 Credit account:**
-Code: ${suggestions.creditAccount.newAccountSuggestion?.accountCode}
-Current name: ${suggestions.creditAccount.newAccountSuggestion?.accountName}
-Type: ${suggestions.creditAccount.newAccountSuggestion?.accountType}
+Code: ${suggestions.creditAccount?.newAccountSuggestion?.accountCode || "N/A"}
+Current name: ${suggestions.creditAccount?.newAccountSuggestion?.accountName || "N/A"}
+Type: ${suggestions.creditAccount?.newAccountSuggestion?.accountType || "N/A"}
 
 💡 Write new names or press "Keep as is" to continue.
       `;
@@ -431,7 +440,7 @@ Type: ${suggestions.creditAccount.newAccountSuggestion?.accountType}
    */
   @Callback("show-account-selection")
   async handleShowAccountSelection(
-    context: ExtendedCallbackContext
+    context: ExtendedCallbackContext,
   ): Promise<CallbackResult> {
     this.logger.log("Showing account selection options", {
       userId: context.userId,
@@ -444,7 +453,7 @@ Type: ${suggestions.creditAccount.newAccountSuggestion?.accountType}
       // Get user's existing accounts
       const accountService = this.getService(context, AccountService);
       const existingAccounts = await accountService.getUserAccounts(
-        context.userId
+        context.userId,
       );
 
       if (existingAccounts.length === 0) {
@@ -456,8 +465,8 @@ Type: ${suggestions.creditAccount.newAccountSuggestion?.accountType}
 
       const accountList = existingAccounts
         .map(
-          acc =>
-            `• ${acc.accountCode} - ${acc.accountName} (${acc.accountType})`
+          (acc) =>
+            `• ${acc.accountCode} - ${acc.accountName} (${acc.accountType})`,
         )
         .join("\n");
 
@@ -493,7 +502,7 @@ ${accountList}
    */
   @Callback("cancel-transaction")
   async handleCancelTransaction(
-    context: ExtendedCallbackContext
+    context: ExtendedCallbackContext,
   ): Promise<CallbackResult> {
     this.logger.log("Processing transaction cancellation", {
       userId: context.userId,
@@ -508,7 +517,7 @@ ${accountList}
         try {
           const journalEntryService = this.getService(
             context,
-            JournalEntryService
+            JournalEntryService,
           );
 
           // Get journal entry to check status
@@ -519,21 +528,21 @@ ${accountList}
             // Revert draft transaction (mark as cancelled)
             await journalEntryService.reverseJournalEntry(
               journalEntryId,
-              "Cancelled by user"
+              "Cancelled by user",
             );
 
             this.logger.log(
-              `JournalEntry ${journalEntryId} cancelled (status changed to REVERTED)`
+              `JournalEntry ${journalEntryId} cancelled (status changed to REVERTED)`,
             );
           } else {
             this.logger.warn(
-              `Cannot cancel JournalEntry ${journalEntryId} - status is ${entry.status}, not DRAFT`
+              `Cannot cancel JournalEntry ${journalEntryId} - status is ${entry.status}, not DRAFT`,
             );
           }
         } catch (error) {
           this.logger.error(
             `Failed to cancel JournalEntry ${journalEntryId}:`,
-            error
+            error,
           );
           // Continue with cancellation message even if DB update fails
         }
@@ -562,7 +571,7 @@ ${accountList}
    */
   @Callback("confirm-transaction")
   async handleConfirmTransaction(
-    context: ExtendedCallbackContext
+    context: ExtendedCallbackContext,
   ): Promise<CallbackResult> {
     this.logger.log("Processing transaction confirmation from card", {
       userId: context.userId,
@@ -604,7 +613,7 @@ ${accountList}
         if (entry.pendingAccountData) {
           const accountCode = entry.pendingAccountData.code;
           this.logger.log(
-            `Creating pending account ${accountCode}: ${entry.pendingAccountData.name}`
+            `Creating pending account ${accountCode}: ${entry.pendingAccountData.name}`,
           );
 
           try {
@@ -628,7 +637,7 @@ ${accountList}
           } catch (error) {
             this.logger.error(
               `Failed to create account ${accountCode}:`,
-              error
+              error,
             );
             return {
               success: false,
@@ -639,7 +648,7 @@ ${accountList}
       }
 
       // Save updated entries if we created any accounts
-      if (journalEntry.entries.some(e => !e.pendingAccountData)) {
+      if (journalEntry.entries.some((e) => !e.pendingAccountData)) {
         await journalEntry.save();
       }
 
@@ -649,7 +658,7 @@ ${accountList}
 
       if (!postResult.success) {
         this.logger.error(
-          `Failed to post JournalEntry ${journalEntryId}: ${postResult.error}`
+          `Failed to post JournalEntry ${journalEntryId}: ${postResult.error}`,
         );
         return {
           success: false,
@@ -664,8 +673,10 @@ ${accountList}
         await journalEntryService.getJournalEntry(journalEntryId);
 
       // Format response with actual data from journal entry
-      const debitEntry = populatedEntry.entries.find(e => e.debitAmount > 0);
-      const creditEntry = populatedEntry.entries.find(e => e.creditAmount > 0);
+      const debitEntry = populatedEntry.entries.find((e) => e.debitAmount > 0);
+      const creditEntry = populatedEntry.entries.find(
+        (e) => e.creditAmount > 0,
+      );
 
       // Get account names from populated accountId
       const debitAccountName =
@@ -704,7 +715,7 @@ ${accountList}
    */
   @Callback("confirm-simple-transaction")
   async handleConfirmSimpleTransaction(
-    context: ExtendedCallbackContext
+    context: ExtendedCallbackContext,
   ): Promise<CallbackResult> {
     this.logger.log("Processing simple transaction confirmation", {
       userId: context.userId,
@@ -745,7 +756,7 @@ ${fallback ? "⚠️ Processed without AI" : ""}
    */
   @Callback("confirm-account-plan")
   async handleConfirmAccountPlan(
-    context: ExtendedCallbackContext
+    context: ExtendedCallbackContext,
   ): Promise<CallbackResult> {
     this.logger.log("Processing account plan confirmation", {
       userId: context.userId,
@@ -764,7 +775,7 @@ ${fallback ? "⚠️ Processed without AI" : ""}
 
       const pendingAccountPlanService = this.getService(
         context,
-        PendingAccountPlanService
+        PendingAccountPlanService,
       );
 
       // Load plan
@@ -781,12 +792,12 @@ ${fallback ? "⚠️ Processed without AI" : ""}
         await pendingAccountPlanService.confirmPlan(planId);
 
       this.logger.log(
-        `Account plan ${planId} confirmed, created JournalEntry ${journalEntryId}`
+        `Account plan ${planId} confirmed, created JournalEntry ${journalEntryId}`,
       );
 
       // Format account list
       const accountsList = plan.accountsToCreate
-        .map(acc => `• ${acc.code} - ${acc.name}`)
+        .map((acc) => `• ${acc.code} - ${acc.name}`)
         .join("\n");
 
       return {
@@ -821,7 +832,7 @@ ${accountsList}
    */
   @Callback("cancel-account-plan")
   async handleCancelAccountPlan(
-    context: ExtendedCallbackContext
+    context: ExtendedCallbackContext,
   ): Promise<CallbackResult> {
     this.logger.log("Processing account plan cancellation", {
       userId: context.userId,
@@ -840,7 +851,7 @@ ${accountsList}
 
       const pendingAccountPlanService = this.getService(
         context,
-        PendingAccountPlanService
+        PendingAccountPlanService,
       );
 
       // Reject plan
@@ -871,7 +882,7 @@ ${accountsList}
    */
   @Callback("revert-transaction")
   async handleRevertTransaction(
-    context: ExtendedCallbackContext
+    context: ExtendedCallbackContext,
   ): Promise<CallbackResult> {
     this.logger.log("Processing transaction revert", {
       userId: context.userId,
@@ -909,7 +920,7 @@ ${accountsList}
       // Reverse the journal entry
       await journalEntryService.reverseJournalEntry(
         journalEntryId,
-        "Reverted by user"
+        "Reverted by user",
       );
 
       this.logger.log(`JournalEntry ${journalEntryId} reverted successfully`);

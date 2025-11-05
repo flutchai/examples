@@ -20,7 +20,7 @@ export class ConfirmAccountsNode {
 
   async execute(
     state: TransactionStateValues,
-    config: LangGraphRunnableConfig<LedgerGraphConfigValues>
+    config: LangGraphRunnableConfig<LedgerGraphConfigValues>,
   ): Promise<Partial<TransactionStateValues>> {
     this.logger.log("Auto-confirming account selection (no interrupt)");
 
@@ -28,7 +28,7 @@ export class ConfirmAccountsNode {
     // New accounts will be created automatically with LLM-generated names
     if (state.newAccountsNeeded.length > 0) {
       this.logger.log(
-        `Auto-approving ${state.newAccountsNeeded.length} new accounts: ${state.newAccountsNeeded.map(a => a.name).join(", ")}`
+        `Auto-approving ${state.newAccountsNeeded.length} new accounts: ${state.newAccountsNeeded.map((a) => a.name).join(", ")}`,
       );
     }
 
@@ -39,11 +39,30 @@ export class ConfirmAccountsNode {
    * Build confirmed transactions ready for creation
    */
   private async buildConfirmedTransactions(
-    state: TransactionStateValues
+    state: TransactionStateValues,
   ): Promise<Partial<TransactionStateValues>> {
     const confirmedTransactions: ConfirmedTransaction[] =
       state.parsedTransactions.map((tx, idx) => {
         const mapping = state.accountMappings[idx];
+
+        if (!mapping) {
+          this.logger.error(`Missing account mapping for transaction ${idx}`, {
+            tx,
+          });
+          throw new Error(
+            `Missing account mapping for transaction at index ${idx}`,
+          );
+        }
+
+        if (!mapping.debitAccount || !mapping.creditAccount) {
+          this.logger.error(
+            `Incomplete account mapping for transaction ${idx}`,
+            { mapping },
+          );
+          throw new Error(
+            `Incomplete account mapping: missing debit or credit account`,
+          );
+        }
 
         return {
           description: tx.description,
@@ -57,7 +76,7 @@ export class ConfirmAccountsNode {
       });
 
     this.logger.log(
-      `Built ${confirmedTransactions.length} confirmed transactions`
+      `Built ${confirmedTransactions.length} confirmed transactions`,
     );
 
     return {

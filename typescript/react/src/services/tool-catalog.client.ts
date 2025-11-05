@@ -17,7 +17,9 @@ export class ToolCatalogClient {
     try {
       this.logger.debug("Fetching active tools from catalog");
       const response = await firstValueFrom(
-        this.httpService.get<IToolCatalog[]>(`${this.baseUrl}/api/tools/active`)
+        this.httpService.get<IToolCatalog[]>(
+          `${this.baseUrl}/api/tools/active`,
+        ),
       );
       this.logger.debug(`Retrieved ${response.data.length} active tools`);
       return response.data;
@@ -39,11 +41,11 @@ export class ToolCatalogClient {
           `${this.baseUrl}/api/tools/by-names`,
           {
             toolNames,
-          }
-        )
+          },
+        ),
       );
       this.logger.debug(
-        `Found ${response.data.length} tools out of ${toolNames.length} requested`
+        `Found ${response.data.length} tools out of ${toolNames.length} requested`,
       );
       return response.data;
     } catch (error) {
@@ -63,7 +65,7 @@ export class ToolCatalogClient {
 
     const catalogTools = await this.getToolsByNames(toolNames);
     const catalogToolMap = new Map(
-      catalogTools.map(tool => [tool.toolName, tool])
+      catalogTools.map((tool) => [tool.toolName, tool]),
     );
 
     const validTools: string[] = [];
@@ -83,7 +85,7 @@ export class ToolCatalogClient {
     }
 
     this.logger.debug(
-      `Tool validation results: ${validTools.length} valid, ${invalidTools.length} invalid, ${inactiveTools.length} inactive`
+      `Tool validation results: ${validTools.length} valid, ${invalidTools.length} invalid, ${inactiveTools.length} inactive`,
     );
 
     return { validTools, invalidTools, inactiveTools };

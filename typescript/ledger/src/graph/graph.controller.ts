@@ -12,7 +12,7 @@ import { BuilderRegistryService } from "@flutchai/flutch-sdk";
 export class LedgerGraphController extends GraphController {
   constructor(
     @Inject("GRAPH_SERVICE") protected readonly graphService: IGraphService,
-    builderRegistry: BuilderRegistryService
+    builderRegistry: BuilderRegistryService,
   ) {
     super(graphService, builderRegistry);
   }

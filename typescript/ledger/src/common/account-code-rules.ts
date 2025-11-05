@@ -63,7 +63,7 @@ export const CHART_OF_ACCOUNTS_SHORT =
  */
 export function validateAccountCode(
   code: string,
-  accountType: AccountType
+  accountType: AccountType,
 ): {
   isValid: boolean;
   error?: string;

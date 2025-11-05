@@ -30,7 +30,7 @@ export class ServiceController {
   constructor(
     private readonly accountService: AccountService,
     private readonly journalEntryService: JournalEntryService,
-    private readonly transactionService: TransactionService
+    private readonly transactionService: TransactionService,
   ) {}
 
   // =====================
@@ -62,7 +62,7 @@ export class ServiceController {
   @Get("accounts")
   async getUserAccounts(
     @Query("userId") userId: string,
-    @Query("type") accountType?: AccountType
+    @Query("type") accountType?: AccountType,
   ) {
     try {
       if (!userId) {
@@ -77,7 +77,7 @@ export class ServiceController {
         success: true,
         userId,
         count: accounts.length,
-        accounts: accounts.map(account => ({
+        accounts: accounts.map((account) => ({
           id: account._id,
           accountCode: account.accountCode,
           accountName: account.accountName,
@@ -98,7 +98,7 @@ export class ServiceController {
   @Get("accounts/:accountCode")
   async getAccount(
     @Param("accountCode") accountCode: string,
-    @Query("userId") userId: string
+    @Query("userId") userId: string,
   ) {
     try {
       if (!userId) {
@@ -132,7 +132,7 @@ export class ServiceController {
   async updateAccount(
     @Param("accountCode") accountCode: string,
     @Query("userId") userId: string,
-    @Body() updateDto: UpdateAccountDto
+    @Body() updateDto: UpdateAccountDto,
   ) {
     try {
       if (!userId) {
@@ -142,7 +142,7 @@ export class ServiceController {
       const account = await this.accountService.updateAccount(
         accountCode,
         userId,
-        updateDto
+        updateDto,
       );
       return {
         success: true,
@@ -169,7 +169,7 @@ export class ServiceController {
   @Delete("accounts/:accountCode")
   async deactivateAccount(
     @Param("accountCode") accountCode: string,
-    @Query("userId") userId: string
+    @Query("userId") userId: string,
   ) {
     try {
       if (!userId) {
@@ -274,7 +274,7 @@ export class ServiceController {
     @Query("minAmount") minAmount?: string,
     @Query("maxAmount") maxAmount?: string,
     @Query("limit") limit?: string,
-    @Query("offset") offset?: string
+    @Query("offset") offset?: string,
   ) {
     try {
       if (!userId) {
@@ -351,7 +351,7 @@ export class ServiceController {
   async getTransactionSummary(
     @Query("userId") userId: string,
     @Query("fromDate") fromDate?: string,
-    @Query("toDate") toDate?: string
+    @Query("toDate") toDate?: string,
   ) {
     try {
       if (!userId) {
@@ -364,7 +364,7 @@ export class ServiceController {
       const summary = await this.transactionService.getTransactionSummary(
         userId,
         from,
-        to
+        to,
       );
       return {
         success: true,
@@ -418,7 +418,7 @@ export class ServiceController {
     @Query("userId") userId: string,
     @Query("status") status?: JournalEntryStatus,
     @Query("limit") limit?: string,
-    @Query("offset") offset?: string
+    @Query("offset") offset?: string,
   ) {
     try {
       if (!userId) {
@@ -432,14 +432,14 @@ export class ServiceController {
         userId,
         status,
         limitNum,
-        offsetNum
+        offsetNum,
       );
 
       return {
         success: true,
         userId,
         count: entries.length,
-        entries: entries.map(entry => ({
+        entries: entries.map((entry) => ({
           id: entry._id,
           journalEntryId: entry.journalEntryId,
           date: entry.date,
@@ -492,12 +492,12 @@ export class ServiceController {
   @Put("journal-entries/:journalEntryId")
   async updateJournalEntry(
     @Param("journalEntryId") journalEntryId: string,
-    @Body() updateDto: UpdateJournalEntryDto
+    @Body() updateDto: UpdateJournalEntryDto,
   ) {
     try {
       const entry = await this.journalEntryService.updateJournalEntry(
         journalEntryId,
-        updateDto
+        updateDto,
       );
       return {
         success: true,
@@ -541,7 +541,7 @@ export class ServiceController {
   @Post("journal-entries/:journalEntryId/reverse")
   async reverseJournalEntry(
     @Param("journalEntryId") journalEntryId: string,
-    @Body() { reason }: { reason: string }
+    @Body() { reason }: { reason: string },
   ) {
     try {
       if (!reason) {
@@ -550,7 +550,7 @@ export class ServiceController {
 
       const result = await this.journalEntryService.reverseJournalEntry(
         journalEntryId,
-        reason
+        reason,
       );
       return result;
     } catch (error) {
@@ -571,7 +571,7 @@ export class ServiceController {
     @Param("accountCode") accountCode: string,
     @Query("userId") userId: string,
     @Query("fromDate") fromDate?: string,
-    @Query("toDate") toDate?: string
+    @Query("toDate") toDate?: string,
   ) {
     try {
       if (!userId) {
@@ -585,7 +585,7 @@ export class ServiceController {
         userId,
         accountCode,
         from,
-        to
+        to,
       );
 
       return {
@@ -597,13 +597,13 @@ export class ServiceController {
           toDate: to?.toISOString(),
         },
         activityCount: entries.length,
-        entries: entries.map(entry => ({
+        entries: entries.map((entry) => ({
           journalEntryId: entry.journalEntryId,
           date: entry.date,
           description: entry.description,
           reference: entry.reference,
           accountLine: entry.entries.find(
-            line => (line.accountId as any)?.accountCode === accountCode
+            (line) => (line.accountId as any)?.accountCode === accountCode,
           ),
         })),
       };

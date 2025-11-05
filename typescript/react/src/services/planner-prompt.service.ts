@@ -108,7 +108,7 @@ export class PlannerPromptService {
     tools: ToolMetadata[],
     stepBudget: number,
     remaining: number,
-    config: PlanAndSelectToolConfig = {}
+    config: PlanAndSelectToolConfig = {},
   ): { system: string; human: string } {
     // Build context from current state
     const context = this.buildPromptContext(
@@ -116,7 +116,7 @@ export class PlannerPromptService {
       tools,
       stepBudget,
       remaining,
-      config
+      config,
     );
 
     // Use custom system prompt if provided, otherwise use default
@@ -125,7 +125,7 @@ export class PlannerPromptService {
     // Render human prompt from template
     const humanPrompt = this.renderTemplate(
       this.templates.humanPromptTemplate,
-      context
+      context,
     );
 
     return {
@@ -142,7 +142,7 @@ export class PlannerPromptService {
     tools: ToolMetadata[],
     stepBudget: number,
     remaining: number,
-    config: PlanAndSelectToolConfig = {}
+    config: PlanAndSelectToolConfig = {},
   ): PlannerPromptContext {
     const defaultGuidance =
       "Focus on tools that:\n- Add NEW information not already in evidence\n- Are most directly related to the user's query\n- Can be executed with available arguments\n- Provide structured, actionable results";
@@ -165,7 +165,7 @@ export class PlannerPromptService {
    */
   private formatToolList(tools: ToolMetadata[]): string {
     return tools
-      .map(tool => {
+      .map((tool) => {
         const required = tool.inputSchema?.required || [];
         const context = {
           name: tool.name,
@@ -176,7 +176,7 @@ export class PlannerPromptService {
 
         return this.renderTemplate(
           this.templates.toolDescriptionTemplate,
-          context
+          context,
         );
       })
       .join("\n\n");
@@ -192,7 +192,7 @@ export class PlannerPromptService {
 
     return state.workingMemory
       .slice(-3) // Last 3 entries
-      .map(entry => {
+      .map((entry) => {
         const status = entry.observation.success ? "success" : "failure";
         const summary =
           entry.observation.summary ||
@@ -200,7 +200,7 @@ export class PlannerPromptService {
             typeof entry.observation.payload === "string"
               ? entry.observation.payload
               : JSON.stringify(entry.observation.payload ?? {}, null, 2),
-            300
+            300,
           );
 
         const context = {
@@ -211,7 +211,7 @@ export class PlannerPromptService {
 
         return this.renderTemplate(
           this.templates.workingMemoryTemplate,
-          context
+          context,
         );
       })
       .join("\n");
@@ -221,8 +221,8 @@ export class PlannerPromptService {
    * Formats previous tool invocation hashes
    */
   private formatPreviousHashes(state: ReactGraphStateValues): string[] {
-    return (state.workingMemory || []).map(entry =>
-      this.computeInvocationHash(entry.tool, entry.args)
+    return (state.workingMemory || []).map((entry) =>
+      this.computeInvocationHash(entry.tool, entry.args),
     );
   }
 
@@ -231,7 +231,7 @@ export class PlannerPromptService {
    */
   private renderTemplate(
     template: string,
-    context: Record<string, any>
+    context: Record<string, any>,
   ): string {
     let result = template;
 
@@ -252,7 +252,7 @@ export class PlannerPromptService {
    */
   private computeInvocationHash(
     tool: string,
-    args: Record<string, any>
+    args: Record<string, any>,
   ): string {
     return `${tool}::${JSON.stringify(args, Object.keys(args).sort())}`;
   }

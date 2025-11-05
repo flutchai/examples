@@ -34,13 +34,13 @@ const logger = new Logger("LedgerGraphModule");
 export class LedgerGraphModule implements OnModuleInit {
   constructor(
     private readonly builder: LedgerV1Builder,
-    private readonly builderRegistry: BuilderRegistryService
+    private readonly builderRegistry: BuilderRegistryService,
   ) {}
 
   async onModuleInit() {
     this.builderRegistry.registerBuilder(this.builder);
     logger.log(
-      `Registered LedgerV1Builder with graph type: ${this.builder.graphType}`
+      `Registered LedgerV1Builder with graph type: ${this.builder.graphType}`,
     );
     logger.log("=".repeat(60));
     logger.log("🚀 LEDGER GRAPH SERVICE INITIALIZED");

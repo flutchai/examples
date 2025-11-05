@@ -28,7 +28,7 @@ export const STATE_TRANSITION_RULES: StateTransitionRule[] = [
   {
     from: [NextAction.PLAN, NextAction.EXECUTE, NextAction.REFLECT],
     to: NextAction.ANSWER,
-    condition: state => (state.step ?? 0) >= (state.stepBudget ?? 6),
+    condition: (state) => (state.step ?? 0) >= (state.stepBudget ?? 6),
     message: "Step budget exhausted - should transition to answer mode",
   },
 
@@ -36,7 +36,7 @@ export const STATE_TRANSITION_RULES: StateTransitionRule[] = [
   {
     from: [NextAction.PLAN],
     to: NextAction.ANSWER,
-    condition: state => (state.allowedTools?.length ?? 0) === 0,
+    condition: (state) => (state.allowedTools?.length ?? 0) === 0,
     message: "No tools available - should generate answer directly",
   },
 
@@ -44,7 +44,7 @@ export const STATE_TRANSITION_RULES: StateTransitionRule[] = [
   {
     from: [NextAction.REFLECT],
     to: NextAction.ANSWER,
-    condition: state => (state.evidence?.length ?? 0) > 100,
+    condition: (state) => (state.evidence?.length ?? 0) > 100,
     message: "Sufficient evidence gathered - ready for answer",
   },
 
@@ -52,7 +52,7 @@ export const STATE_TRANSITION_RULES: StateTransitionRule[] = [
   {
     from: [NextAction.PLAN],
     to: NextAction.ANSWER,
-    condition: state => (state.step ?? 0) > 3 && !state.evidence,
+    condition: (state) => (state.step ?? 0) > 3 && !state.evidence,
     message:
       "Multiple planning steps without progress - should generate answer",
   },
@@ -61,16 +61,16 @@ export const STATE_TRANSITION_RULES: StateTransitionRule[] = [
   {
     from: [NextAction.EXECUTE],
     to: NextAction.ANSWER,
-    condition: state => {
+    condition: (state) => {
       const recentEntries = state.workingMemory?.slice(-4) ?? [];
       if (recentEntries.length >= 3) {
-        const tools = recentEntries.map(entry => entry.tool);
+        const tools = recentEntries.map((entry) => entry.tool);
         const uniqueTools = new Set(tools);
         const allFailed = recentEntries.every(
-          entry => !entry.observation.success
+          (entry) => !entry.observation.success,
         );
         const hasAnySuccess =
-          state.workingMemory?.some(entry => entry.observation.success) ||
+          state.workingMemory?.some((entry) => entry.observation.success) ||
           false;
         // Only force answer if same tool failing repeatedly AND we have some successful data
         return uniqueTools.size === 1 && allFailed && hasAnySuccess;
@@ -85,13 +85,13 @@ export const STATE_TRANSITION_RULES: StateTransitionRule[] = [
   {
     from: [NextAction.PLAN, NextAction.EXECUTE, NextAction.REFLECT],
     to: NextAction.ANSWER,
-    condition: state => {
+    condition: (state) => {
       const failedAttempts =
-        state.workingMemory?.filter(entry => !entry.observation.success)
+        state.workingMemory?.filter((entry) => !entry.observation.success)
           .length ?? 0;
       const hasUsefulInfo =
         (state.evidence?.length ?? 0) > 50 ||
-        state.workingMemory?.some(entry => entry.observation.success) ||
+        state.workingMemory?.some((entry) => entry.observation.success) ||
         false;
       // Only force answer if too many failures AND we have some useful information to work with
       return failedAttempts >= 4 && hasUsefulInfo;
@@ -139,7 +139,7 @@ export class ReactGraphStateValidator {
    */
   validateTransition(
     currentState: ReactGraphStateValues,
-    nextAction: NextAction
+    nextAction: NextAction,
   ): ValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
@@ -162,7 +162,7 @@ export class ReactGraphStateValidator {
       currentState,
       nextAction,
       errors,
-      warnings
+      warnings,
     );
 
     return {
@@ -209,12 +209,12 @@ export class ReactGraphStateValidator {
     const recentEntries = state.workingMemory?.slice(-5) ?? [];
     if (recentEntries.length >= 3) {
       // Check if we're repeating the same tool calls
-      const lastThreeTools = recentEntries.slice(-3).map(entry => entry.tool);
+      const lastThreeTools = recentEntries.slice(-3).map((entry) => entry.tool);
       const uniqueTools = new Set(lastThreeTools);
 
       if (
         uniqueTools.size === 1 &&
-        recentEntries.slice(-3).every(entry => !entry.observation.success)
+        recentEntries.slice(-3).every((entry) => !entry.observation.success)
       ) {
         // Same tool failing repeatedly - force answer generation
         return NextAction.ANSWER;
@@ -222,7 +222,7 @@ export class ReactGraphStateValidator {
 
       // Check for alternating failures
       const failureCount = recentEntries.filter(
-        entry => !entry.observation.success
+        (entry) => !entry.observation.success,
       ).length;
       if (failureCount >= 3) {
         return NextAction.ANSWER;
@@ -231,8 +231,8 @@ export class ReactGraphStateValidator {
 
     // Multiple failed attempts
     const failedAttempts =
-      state.workingMemory?.filter(entry => !entry.observation.success).length ??
-      0;
+      state.workingMemory?.filter((entry) => !entry.observation.success)
+        .length ?? 0;
 
     if (failedAttempts > 2) {
       return NextAction.ANSWER; // Changed from CLARIFY to ANSWER to prevent more loops
@@ -263,7 +263,7 @@ export class ReactGraphStateValidator {
 
   private validateBasicIntegrity(
     state: ReactGraphStateValues,
-    errors: string[]
+    errors: string[],
   ): void {
     if (!state.query || state.query.trim().length === 0) {
       errors.push("Query is required and cannot be empty");
@@ -280,7 +280,7 @@ export class ReactGraphStateValidator {
 
   private validateBudget(
     state: ReactGraphStateValues,
-    warnings: string[]
+    warnings: string[],
   ): void {
     const currentStep = state.step ?? 0;
     const budget = state.stepBudget ?? 6;
@@ -296,30 +296,30 @@ export class ReactGraphStateValidator {
 
   private validateForLoops(
     state: ReactGraphStateValues,
-    warnings: string[]
+    warnings: string[],
   ): void {
     const recentActions = state.workingMemory?.slice(-5) ?? [];
 
     // Check for repeated failed attempts - be less aggressive
     const repeatedFailures = recentActions.filter(
-      entry => !entry.observation.success
+      (entry) => !entry.observation.success,
     );
 
     // Only warn if we have many failures AND no successful results at all
     const hasAnySuccess =
-      state.workingMemory?.some(entry => entry.observation.success) || false;
+      state.workingMemory?.some((entry) => entry.observation.success) || false;
     const hasEvidence = (state.evidence?.length ?? 0) > 50;
 
     if (repeatedFailures.length >= 3 && !hasAnySuccess && !hasEvidence) {
       warnings.push("Multiple consecutive failures detected with no progress");
     } else if (repeatedFailures.length >= 2 && hasAnySuccess) {
       warnings.push(
-        "Some tools failing but partial information available - consider generating answer"
+        "Some tools failing but partial information available - consider generating answer",
       );
     }
 
     // Check for duplicate tool calls - also be less aggressive
-    const toolCalls = recentActions.map(entry => entry.tool);
+    const toolCalls = recentActions.map((entry) => entry.tool);
     const uniqueTools = new Set(toolCalls);
     if (toolCalls.length >= 3 && uniqueTools.size === 1 && !hasAnySuccess) {
       warnings.push("Same tool failing repeatedly with no progress");
@@ -330,7 +330,7 @@ export class ReactGraphStateValidator {
     currentState: ReactGraphStateValues,
     nextAction: NextAction,
     errors: string[],
-    warnings: string[]
+    warnings: string[],
   ): void {
     // Validate EXECUTE transition
     if (nextAction === NextAction.EXECUTE) {

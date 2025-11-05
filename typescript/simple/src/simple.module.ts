@@ -64,9 +64,10 @@ const logger = new Logger("SimpleModule");
       provide: "MONGO_CONNECTION",
       useFactory: async (configService: ConfigService): Promise<Connection> => {
         const mongoUri = configService.get<string>("MONGODB_URI")!;
-        const dbName = configService.get<string>("MONGO_DB_NAME") || "simple-graph-dev";
+        const dbName =
+          configService.get<string>("MONGO_DB_NAME") || "simple-graph-dev";
         logger.log(
-          `Connecting to MongoDB: ${mongoUri?.substring(0, 50) + "..."}`
+          `Connecting to MongoDB: ${mongoUri?.substring(0, 50) + "..."}`,
         );
         try {
           await mongoose.connect(mongoUri, { dbName });
@@ -84,10 +85,11 @@ const logger = new Logger("SimpleModule");
       provide: "CHECKPOINTER",
       useFactory: async (
         connection: Connection,
-        configService: ConfigService
+        configService: ConfigService,
       ) => {
         const mongoClient = connection.getClient();
-        const dbName = configService.get<string>("MONGO_DB_NAME") || "simple-graph-dev";
+        const dbName =
+          configService.get<string>("MONGO_DB_NAME") || "simple-graph-dev";
 
         logger.log("Creating CHECKPOINTER for simple graph");
         return new MongoDBSaver({
@@ -109,7 +111,7 @@ export class SimpleModule implements OnModuleInit {
    */
   constructor(
     private readonly simpleV1Builder: SimpleV1Builder,
-    private readonly builderRegistry: BuilderRegistryService
+    private readonly builderRegistry: BuilderRegistryService,
   ) {}
 
   async onModuleInit() {
@@ -118,12 +120,12 @@ export class SimpleModule implements OnModuleInit {
 
     logger.log(
       "Registered SimpleV1Builder with graph type: " +
-        this.simpleV1Builder.graphType
+        this.simpleV1Builder.graphType,
     );
 
     logger.log("🚀 SIMPLE GRAPH SERVICE INITIALIZED");
     logger.log(
-      "📋 Versioning: Automatic registration via UniversalGraphModule"
+      "📋 Versioning: Automatic registration via UniversalGraphModule",
     );
     logger.log("🔄 Available version: 1.0.0 (default)");
   }

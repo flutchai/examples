@@ -116,7 +116,7 @@ export const ReactGraphState = Annotation.Root({
   invocationHashes: Annotation<string[]>({
     reducer: (state, update) => {
       const base = new Set(state ?? []);
-      (update ?? []).forEach(hash => base.add(hash));
+      (update ?? []).forEach((hash) => base.add(hash));
       return Array.from(base);
     },
     default: () => [],

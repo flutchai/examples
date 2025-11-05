@@ -80,11 +80,11 @@ const logger = new Logger("ReactGraphModule");
         const mongoUri = configService.getOrThrow<string>("MONGODB_URI");
         const dbName = configService.get<string>(
           "MONGO_DB_NAME",
-          "react_graph"
+          "react_graph",
         );
 
         logger.log(
-          `Connecting to MongoDB for ReAct graph: ${mongoUri.replace(/\/\/([^:]*):([^@]*)@/, "//***:***@")}`
+          `Connecting to MongoDB for ReAct graph: ${mongoUri.replace(/\/\/([^:]*):([^@]*)@/, "//***:***@")}`,
         );
 
         try {
@@ -93,13 +93,13 @@ const logger = new Logger("ReactGraphModule");
           // @ts-ignore - asPromise exists at runtime on Mongoose Connection
           await connection.asPromise?.();
           logger.log(
-            "✅ MongoDB connection established successfully for ReAct graph"
+            "✅ MongoDB connection established successfully for ReAct graph",
           );
           return connection as Connection;
         } catch (error) {
           logger.error(
             "Failed to connect to MongoDB for ReAct graph",
-            error as Error
+            error as Error,
           );
           throw error;
         }
@@ -126,13 +126,13 @@ const logger = new Logger("ReactGraphModule");
 export class ReactGraphModule implements OnModuleInit {
   constructor(
     private readonly builder: ReactGraphV1Builder,
-    private readonly builderRegistry: BuilderRegistryService
+    private readonly builderRegistry: BuilderRegistryService,
   ) {}
 
   async onModuleInit(): Promise<void> {
     this.builderRegistry.registerBuilder(this.builder);
     logger.log(
-      `Registered ReactGraphV1Builder with graph type: ${this.builder.graphType}`
+      `Registered ReactGraphV1Builder with graph type: ${this.builder.graphType}`,
     );
     logger.log("🚀 REACT GRAPH SERVICE INITIALIZED");
   }

@@ -37,7 +37,7 @@ export class PlanAndSelectToolNode {
 
   constructor(
     private readonly modelInitializer: ModelInitializer,
-    private readonly mcpClient: McpRuntimeHttpClient
+    private readonly mcpClient: McpRuntimeHttpClient,
   ) {}
 
   // Note: Old prompt services (PlannerPromptService, PlanMaterializationService)
@@ -45,7 +45,7 @@ export class PlanAndSelectToolNode {
 
   async execute(
     state: ReactGraphStateValues,
-    config?: LangGraphRunnableConfig<ReactGraphConfigValues>
+    config?: LangGraphRunnableConfig<ReactGraphConfigValues>,
   ): Promise<Partial<ReactGraphStateValues>> {
     // Extract usageRecorder from context
 
@@ -72,28 +72,30 @@ export class PlanAndSelectToolNode {
         const enabledTools = graphSettings?.allowedTools || [];
 
         const toolConfigs = enabledTools
-          .filter(tool =>
-            typeof tool === "object" ? tool.enabled !== false : true
+          .filter((tool) =>
+            typeof tool === "object" ? tool.enabled !== false : true,
           )
-          .map(tool => (typeof tool === "string" ? { name: tool } : tool));
+          .map((tool) => (typeof tool === "string" ? { name: tool } : tool));
 
         if (toolConfigs.length > 0) {
-          const toolNames = toolConfigs.map(tool => tool.name);
+          const toolNames = toolConfigs.map((tool) => tool.name);
 
           // Use McpToolFilter directly like in main Simple graph
           tools = await this.mcpToolFilter.getFilteredTools(toolNames);
-          this.boundToolsByName = new Map(tools.map(tool => [tool.name, tool]));
+          this.boundToolsByName = new Map(
+            tools.map((tool) => [tool.name, tool]),
+          );
 
           availableToolMetadata =
             await this.buildAvailableToolMetadata(toolNames);
 
           // Log tool configs for debugging
-          toolConfigs.forEach(toolConfig => {
+          toolConfigs.forEach((toolConfig) => {
             // Tool configuration is passed to McpToolFilter
           });
 
           this.logger.log(
-            `Configured ${tools.length} tools from MCP runtime: ${toolNames.join(", ")}`
+            `Configured ${tools.length} tools from MCP runtime: ${toolNames.join(", ")}`,
           );
         } else {
           this.boundToolsByName.clear();
@@ -103,7 +105,7 @@ export class PlanAndSelectToolNode {
       } catch (error) {
         this.logger.warn(
           "Failed to load tools, continuing without tools:",
-          error.message
+          error.message,
         );
         this.boundToolsByName.clear();
         this.toolInputSchemasByName.clear();
@@ -159,8 +161,8 @@ export class PlanAndSelectToolNode {
         details: {
           modelId,
           toolCount: pendingToolCalls.length,
-          allowedTools: (graphSettings?.allowedTools || []).map(t =>
-            typeof t === "string" ? t : t.name
+          allowedTools: (graphSettings?.allowedTools || []).map((t) =>
+            typeof t === "string" ? t : t.name,
           ),
         },
       };
@@ -194,7 +196,7 @@ export class PlanAndSelectToolNode {
    */
   private buildReActSystemPrompt(
     state: ReactGraphStateValues,
-    settings: ReactGraphSettings
+    settings: ReactGraphSettings,
   ): string {
     // Get configuration from reactNode
     const reactNodeConfig = settings?.reactNode || {};
@@ -215,7 +217,7 @@ export class PlanAndSelectToolNode {
       const maxSteps = reactNodeConfig.maxStepsInPrompt ?? 3;
       const conversationHistory = this.formatConversationHistory(
         state,
-        maxSteps
+        maxSteps,
       );
       if (conversationHistory !== "This is the start of the conversation.") {
         systemPrompt += `\n\n## Conversation Context\n\n${conversationHistory}`;
@@ -235,7 +237,7 @@ export class PlanAndSelectToolNode {
    */
   private buildMessagesFromState(
     state: ReactGraphStateValues,
-    systemPrompt: string
+    systemPrompt: string,
   ): any[] {
     const messages: any[] = [new SystemMessage(systemPrompt)];
 
@@ -263,7 +265,7 @@ export class PlanAndSelectToolNode {
 
     if (Array.isArray(content)) {
       return content
-        .map(part => {
+        .map((part) => {
           if (typeof part === "string") {
             return part;
           }
@@ -304,7 +306,7 @@ export class PlanAndSelectToolNode {
 
         const normalizedArgs = this.normalizeToolArgs(
           toolCall.args,
-          toolCall.name
+          toolCall.name,
         );
 
         return {
@@ -318,7 +320,7 @@ export class PlanAndSelectToolNode {
 
   private normalizeToolArgs(
     args: unknown,
-    toolName?: string
+    toolName?: string,
   ): Record<string, unknown> {
     let normalized: Record<string, unknown>;
 
@@ -346,7 +348,7 @@ export class PlanAndSelectToolNode {
 
   private alignArgsWithSchema(
     toolName: string,
-    args: Record<string, unknown>
+    args: Record<string, unknown>,
   ): Record<string, unknown> {
     const schema = this.toolInputSchemasByName.get(toolName);
     const tool = this.boundToolsByName.get(toolName) as
@@ -371,20 +373,20 @@ export class PlanAndSelectToolNode {
         const corrected = this.tryCoerceWithSchema(
           schema,
           workingArgs,
-          toolName
+          toolName,
         );
         if (corrected) {
           try {
             return tool.schema.parse(corrected);
           } catch (parseError) {
             this.logger.warn(
-              `Tool ${toolName} arguments still invalid after correction: ${(parseError as Error).message}`
+              `Tool ${toolName} arguments still invalid after correction: ${(parseError as Error).message}`,
             );
           }
         }
 
         this.logger.warn(
-          `Tool ${toolName} arguments failed schema validation: ${(error as Error).message}`
+          `Tool ${toolName} arguments failed schema validation: ${(error as Error).message}`,
         );
       }
     }
@@ -395,7 +397,7 @@ export class PlanAndSelectToolNode {
   private ensureRequiredFields(
     schema: ToolMetadata["inputSchema"],
     args: Record<string, unknown>,
-    toolName: string
+    toolName: string,
   ): Record<string, unknown> {
     const requiredFields = Array.isArray(schema.required)
       ? schema.required
@@ -406,7 +408,7 @@ export class PlanAndSelectToolNode {
 
     const workingArgs = { ...args };
 
-    requiredFields.forEach(requiredKey => {
+    requiredFields.forEach((requiredKey) => {
       if (this.hasNonEmptyValue(workingArgs[requiredKey])) {
         return;
       }
@@ -424,7 +426,7 @@ export class PlanAndSelectToolNode {
   private tryCoerceWithSchema(
     schema: ToolMetadata["inputSchema"] | undefined,
     args: Record<string, unknown>,
-    toolName: string
+    toolName: string,
   ): Record<string, unknown> | null {
     if (!schema) {
       return null;
@@ -455,7 +457,7 @@ export class PlanAndSelectToolNode {
 
   private findAliasForRequiredField(
     requiredKey: string,
-    args: Record<string, unknown>
+    args: Record<string, unknown>,
   ): string | null {
     const aliasCandidates = [
       requiredKey,
@@ -498,7 +500,7 @@ export class PlanAndSelectToolNode {
   }
 
   private async buildAvailableToolMetadata(
-    toolNames: string[]
+    toolNames: string[],
   ): Promise<ToolMetadata[]> {
     if (toolNames.length === 0) {
       this.toolInputSchemasByName.clear();
@@ -507,12 +509,14 @@ export class PlanAndSelectToolNode {
 
     try {
       const runtimeTools = await this.mcpClient.getTools();
-      const toolCatalog = new Map(runtimeTools.map(tool => [tool.name, tool]));
+      const toolCatalog = new Map(
+        runtimeTools.map((tool) => [tool.name, tool]),
+      );
 
       this.toolInputSchemasByName.clear();
 
       return toolNames
-        .map(name => {
+        .map((name) => {
           const tool = toolCatalog.get(name);
           if (!tool) {
             return null;
@@ -550,7 +554,7 @@ export class PlanAndSelectToolNode {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.warn(
-        `Failed to build tool metadata from MCP runtime: ${message}`
+        `Failed to build tool metadata from MCP runtime: ${message}`,
       );
       this.toolInputSchemasByName.clear();
       return [];
@@ -566,10 +570,10 @@ export class PlanAndSelectToolNode {
     }
 
     return settings.allowedTools
-      .filter(tool =>
-        typeof tool === "object" ? tool.enabled !== false : true
+      .filter((tool) =>
+        typeof tool === "object" ? tool.enabled !== false : true,
       )
-      .map(tool => (typeof tool === "string" ? tool : tool.name));
+      .map((tool) => (typeof tool === "string" ? tool : tool.name));
   }
 
   /**
@@ -577,7 +581,7 @@ export class PlanAndSelectToolNode {
    */
   private formatConversationHistory(
     state: ReactGraphStateValues,
-    maxSteps: number = 3
+    maxSteps: number = 3,
   ): string {
     if (!state.messages || state.messages.length === 0) {
       return "This is the start of the conversation.";
@@ -585,7 +589,7 @@ export class PlanAndSelectToolNode {
 
     const formatted = state.messages
       .slice(-maxSteps * 2)
-      .map(msg => {
+      .map((msg) => {
         // Handle both LangChain Message objects and plain objects
         const messageType =
           typeof msg.getType === "function" ? msg.getType() : (msg as any).type;
@@ -632,7 +636,7 @@ export class PlanAndSelectToolNode {
    */
   async executeTools(
     state: ReactGraphStateValues,
-    config?: LangGraphRunnableConfig<any>
+    config?: LangGraphRunnableConfig<any>,
   ): Promise<Partial<ReactGraphStateValues>> {
     try {
       const lastMessage = state.messages?.[state.messages.length - 1];
@@ -650,17 +654,17 @@ export class PlanAndSelectToolNode {
       for (const toolCall of toolCalls) {
         try {
           this.logger.debug(
-            `🔧 Executing tool: ${toolCall.name} with args: ${JSON.stringify(toolCall.args)}`
+            `🔧 Executing tool: ${toolCall.name} with args: ${JSON.stringify(toolCall.args)}`,
           );
 
           // Call MCP runtime to execute the tool
           const result = await this.mcpClient.executeTool(
             toolCall.name,
-            toolCall.args
+            toolCall.args,
           );
 
           this.logger.log(
-            `🔧 Tool ${toolCall.name} execution result: success=${result.success}, error=${result.error}`
+            `🔧 Tool ${toolCall.name} execution result: success=${result.success}, error=${result.error}`,
           );
 
           // Create tool result message
@@ -678,7 +682,7 @@ export class PlanAndSelectToolNode {
         } catch (toolError) {
           this.logger.error(
             `🔧 Error executing tool ${toolCall.name}:`,
-            toolError
+            toolError,
           );
 
           // Create error result message

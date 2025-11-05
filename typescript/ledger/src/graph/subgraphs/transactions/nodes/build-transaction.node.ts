@@ -23,15 +23,15 @@ export class BuildTransactionNode {
 
   constructor(
     private readonly accountIntelligence: AccountIntelligenceService,
-    private readonly accountService: AccountService
+    private readonly accountService: AccountService,
   ) {}
 
   async execute(
     state: TransactionStateValues,
-    config: LangGraphRunnableConfig<LedgerGraphConfigValues>
+    config: LangGraphRunnableConfig<LedgerGraphConfigValues>,
   ): Promise<Partial<TransactionStateValues>> {
     this.logger.log(
-      `Building ${state.parsedTransactions.length} transaction(s)`
+      `Building ${state.parsedTransactions.length} transaction(s)`,
     );
 
     try {
@@ -43,15 +43,23 @@ export class BuildTransactionNode {
       this.logger.log(`Found ${existingAccounts.length} existing accounts`);
 
       // Analyze accounts for all transactions
+      this.logger.debug(
+        `About to analyze ${state.isBatch ? "BATCH" : "SINGLE"} transactions`,
+      );
+
       const analysis = state.isBatch
         ? await this.analyzeBatchTransactions(state, existingAccounts, config)
         : await this.analyzeSingleTransaction(state, existingAccounts, config);
+
+      this.logger.debug(
+        `Analysis returned: ${JSON.stringify(analysis ? "HAS_ANALYSIS" : "NO_ANALYSIS")}`,
+      );
 
       const needsConfirmation = analysis.newAccountsNeeded.length > 0;
 
       this.logger.log(
         `Account analysis complete. New accounts needed: ${analysis.newAccountsNeeded.length}, ` +
-          `needs confirmation: ${needsConfirmation}`
+          `needs confirmation: ${needsConfirmation}`,
       );
 
       return {
@@ -78,12 +86,12 @@ export class BuildTransactionNode {
   private async analyzeSingleTransaction(
     state: TransactionStateValues,
     existingAccounts: any[],
-    config: LangGraphRunnableConfig<LedgerGraphConfigValues>
+    config: LangGraphRunnableConfig<LedgerGraphConfigValues>,
   ) {
     const transaction = state.parsedTransactions[0];
 
     this.logger.log(
-      `Analyzing accounts for single transaction: ${transaction.description}`
+      `Analyzing accounts for single transaction: ${transaction.description}`,
     );
 
     const accountAnalysisConfig =
@@ -105,8 +113,32 @@ export class BuildTransactionNode {
       existingAccounts,
       modelSettings,
       usageRecorder,
-      new Date().toISOString().split("T")[0]
+      new Date().toISOString().split("T")[0],
     );
+
+    // Log result for debugging
+    this.logger.debug(
+      `Account intelligence result: ${JSON.stringify(result, null, 2)}`,
+    );
+
+    // Validate result structure
+    if (!result || !result.suggestedAccounts) {
+      throw new Error(
+        `Invalid result from account intelligence: ${JSON.stringify(result)}`,
+      );
+    }
+
+    // Validate nested structure
+    if (!result.suggestedAccounts.debitAccount) {
+      throw new Error(
+        `Missing debitAccount in result: ${JSON.stringify(result.suggestedAccounts)}`,
+      );
+    }
+    if (!result.suggestedAccounts.creditAccount) {
+      throw new Error(
+        `Missing creditAccount in result: ${JSON.stringify(result.suggestedAccounts)}`,
+      );
+    }
 
     // Convert to our format
     const accountMapping: AccountMapping = {
@@ -118,9 +150,9 @@ export class BuildTransactionNode {
           "",
         name: result.suggestedAccounts.debitAccount.existingAccountCode
           ? existingAccounts.find(
-              a =>
+              (a) =>
                 a.accountCode ===
-                result.suggestedAccounts.debitAccount.existingAccountCode
+                result.suggestedAccounts.debitAccount.existingAccountCode,
             )?.accountName || ""
           : result.suggestedAccounts.debitAccount.newAccountSuggestion
               ?.accountName || "",
@@ -137,9 +169,9 @@ export class BuildTransactionNode {
           "",
         name: result.suggestedAccounts.creditAccount.existingAccountCode
           ? existingAccounts.find(
-              a =>
+              (a) =>
                 a.accountCode ===
-                result.suggestedAccounts.creditAccount.existingAccountCode
+                result.suggestedAccounts.creditAccount.existingAccountCode,
             )?.accountName || ""
           : result.suggestedAccounts.creditAccount.newAccountSuggestion
               ?.accountName || "",
@@ -165,7 +197,7 @@ export class BuildTransactionNode {
         name: suggestion.accountName || "",
         type: suggestion.accountType || AccountType.EXPENSE,
         normalBalance: this.determineNormalBalance(
-          suggestion.accountType || AccountType.EXPENSE
+          suggestion.accountType || AccountType.EXPENSE,
         ),
         currency: transaction.currency || "USD",
       });
@@ -182,7 +214,7 @@ export class BuildTransactionNode {
         name: suggestion.accountName || "",
         type: suggestion.accountType || AccountType.ASSET,
         normalBalance: this.determineNormalBalance(
-          suggestion.accountType || AccountType.ASSET
+          suggestion.accountType || AccountType.ASSET,
         ),
         currency: transaction.currency || "USD",
       });
@@ -200,12 +232,12 @@ export class BuildTransactionNode {
   private async analyzeBatchTransactions(
     state: TransactionStateValues,
     existingAccounts: any[],
-    config: LangGraphRunnableConfig<LedgerGraphConfigValues>
+    config: LangGraphRunnableConfig<LedgerGraphConfigValues>,
   ) {
     const transactions = state.parsedTransactions;
 
     this.logger.log(
-      `Analyzing accounts for ${transactions.length} transactions`
+      `Analyzing accounts for ${transactions.length} transactions`,
     );
 
     const accountAnalysisConfig =
@@ -221,7 +253,7 @@ export class BuildTransactionNode {
 
     // Use batch account intelligence
     const result = await this.accountIntelligence.analyzeBatchTransactions(
-      transactions.map(tx => ({
+      transactions.map((tx) => ({
         userInput: tx.description,
         amount: tx.amount,
         currency: tx.currency || "USD",
@@ -231,12 +263,40 @@ export class BuildTransactionNode {
       existingAccounts,
       modelSettings,
       usageRecorder,
-      new Date().toISOString().split("T")[0]
+      new Date().toISOString().split("T")[0],
     );
+
+    this.logger.debug(
+      `Batch analysis result: ${JSON.stringify(result, null, 2)}`,
+    );
+
+    // Validate result
+    if (
+      !result ||
+      !result.accountMappings ||
+      result.accountMappings.length === 0
+    ) {
+      this.logger.error("Batch analysis returned no account mappings", {
+        result,
+      });
+      throw new Error(
+        "Batch account analysis failed: no account mappings returned",
+      );
+    }
+
+    if (result.accountMappings.length !== transactions.length) {
+      this.logger.error(
+        `Mismatch: ${transactions.length} transactions but ${result.accountMappings.length} mappings`,
+        { result },
+      );
+      throw new Error(
+        `Account mapping count mismatch: expected ${transactions.length}, got ${result.accountMappings.length}`,
+      );
+    }
 
     // Convert to our format
     const accountMappings: AccountMapping[] = result.accountMappings.map(
-      mapping => ({
+      (mapping) => ({
         debitAccount: {
           code: mapping.toAccount.code,
           name: mapping.toAccount.name,
@@ -250,18 +310,18 @@ export class BuildTransactionNode {
           exists: mapping.fromAccount.exists,
         },
         reasoning: mapping.reasoning,
-      })
+      }),
     );
 
     // Convert new accounts
     const newAccountsNeeded: NewAccountSpec[] = result.newAccountsNeeded.map(
-      acc => ({
+      (acc) => ({
         code: acc.code,
         name: acc.name,
         type: acc.type,
         normalBalance: this.determineNormalBalance(acc.type),
         currency: transactions[0]?.currency || "USD",
-      })
+      }),
     );
 
     return {

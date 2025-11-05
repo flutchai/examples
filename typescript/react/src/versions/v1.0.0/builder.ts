@@ -53,13 +53,13 @@ export class ReactGraphV1Builder
     @Inject(ReactGraphTokens.GENERATE_ANSWER_NODE)
     private readonly answerNode: Nodes.GenerateAnswerNode,
     @Inject(ReactGraphTokens.CLARIFY_NODE)
-    private readonly clarifyNode: Nodes.ClarifyNode
+    private readonly clarifyNode: Nodes.ClarifyNode,
   ) {
     super();
   }
 
   async buildGraph(
-    _payload?: IGraphRequestPayload
+    _payload?: IGraphRequestPayload,
   ): Promise<ReactGraphCompiledGraph> {
     const workflow = new StateGraph<
       ReactGraphDefinition,
@@ -79,11 +79,11 @@ export class ReactGraphV1Builder
         metadata: {
           stream_channel: StreamChannel.PROCESSING,
         },
-      }
+      },
     );
     workflow.addNode(
       GraphNodeId.EXECUTE_TOOL,
-      this.executeNode.execute.bind(this.executeNode)
+      this.executeNode.execute.bind(this.executeNode),
     );
     workflow.addNode(
       GraphNodeId.REFLECT_AND_DECIDE,
@@ -92,7 +92,7 @@ export class ReactGraphV1Builder
         metadata: {
           stream_channel: StreamChannel.PROCESSING,
         },
-      }
+      },
     );
     workflow.addNode(
       GraphNodeId.GENERATE_ANSWER,
@@ -101,7 +101,7 @@ export class ReactGraphV1Builder
         metadata: {
           stream_channel: StreamChannel.TEXT,
         },
-      }
+      },
     );
     workflow.addNode(
       GraphNodeId.CLARIFY,
@@ -110,7 +110,7 @@ export class ReactGraphV1Builder
         metadata: {
           stream_channel: StreamChannel.TEXT,
         },
-      }
+      },
     );
 
     // Entry point
@@ -120,7 +120,7 @@ export class ReactGraphV1Builder
     workflow.addConditionalEdges(
       GraphNodeId.PLAN_AND_SELECT_TOOL,
       (state: ReactGraphStateValues) => routeFromPlanAndSelectTool(state),
-      ROUTE_MAPPINGS.fromPlanAndSelectTool
+      ROUTE_MAPPINGS.fromPlanAndSelectTool,
     );
 
     // After tool execution, go to reflect
@@ -130,7 +130,7 @@ export class ReactGraphV1Builder
     workflow.addConditionalEdges(
       GraphNodeId.REFLECT_AND_DECIDE,
       (state: ReactGraphStateValues) => routeFromReflectAndDecide(state),
-      ROUTE_MAPPINGS.fromReflectAndDecide
+      ROUTE_MAPPINGS.fromReflectAndDecide,
     );
 
     // Terminal nodes - direct to END
@@ -154,8 +154,8 @@ export class ReactGraphV1Builder
 
     const stepBudget = graphSettings.stepBudget ?? 6;
     const allowedTools = (graphSettings.allowedTools || [])
-      .filter(tool => tool.enabled !== false)
-      .map(tool => tool.name);
+      .filter((tool) => tool.enabled !== false)
+      .map((tool) => tool.name);
 
     // Extract user query from message - like in support graph
     let query = "";
@@ -192,7 +192,7 @@ export class ReactGraphV1Builder
     if (!validationResult.valid) {
       this.logger.error("State validation failed:", validationResult.errors);
       throw new Error(
-        `State validation failed: ${validationResult.errors.join(", ")}`
+        `State validation failed: ${validationResult.errors.join(", ")}`,
       );
     }
 

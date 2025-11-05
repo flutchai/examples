@@ -17,7 +17,7 @@ export class AccountRepository {
 
   async create(dto: CreateAccountDto): Promise<Account> {
     this.logger.debug(
-      `Creating account: ${dto.accountCode} - ${dto.accountName}`
+      `Creating account: ${dto.accountCode} - ${dto.accountName}`,
     );
 
     const account = new this.accountModel({
@@ -31,7 +31,7 @@ export class AccountRepository {
 
   async findByCode(
     accountCode: string,
-    userId: string
+    userId: string,
   ): Promise<Account | null> {
     return this.accountModel.findOne({ accountCode, userId }).exec();
   }
@@ -49,7 +49,7 @@ export class AccountRepository {
 
   async findByType(
     userId: string,
-    accountType: AccountType
+    accountType: AccountType,
   ): Promise<Account[]> {
     return this.accountModel
       .find({ userId, accountType, isActive: true })
@@ -61,20 +61,20 @@ export class AccountRepository {
     await this.accountModel
       .updateOne(
         { _id: accountId },
-        { balance: newBalance, updatedAt: new Date() }
+        { balance: newBalance, updatedAt: new Date() },
       )
       .exec();
   }
 
   async incrementBalance(
     accountId: string,
-    amount: number
+    amount: number,
   ): Promise<Account | null> {
     return this.accountModel
       .findByIdAndUpdate(
         accountId,
         { $inc: { balance: amount }, updatedAt: new Date() },
-        { new: true }
+        { new: true },
       )
       .exec();
   }
@@ -143,13 +143,13 @@ export class AccountRepository {
 
   async update(
     accountId: string,
-    updateDto: UpdateAccountDto
+    updateDto: UpdateAccountDto,
   ): Promise<Account | null> {
     return this.accountModel
       .findByIdAndUpdate(
         accountId,
         { ...updateDto, updatedAt: new Date() },
-        { new: true }
+        { new: true },
       )
       .exec();
   }
@@ -181,7 +181,7 @@ export class AccountRepository {
       [AccountType.EXPENSE]: 0,
     };
 
-    results.forEach(result => {
+    results.forEach((result) => {
       totals[result._id] = result.totalBalance;
     });
 

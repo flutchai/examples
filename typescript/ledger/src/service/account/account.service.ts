@@ -22,7 +22,7 @@ export class AccountService {
 
   async createAccount(dto: CreateAccountDto): Promise<Account> {
     this.logger.debug(
-      `Creating account: ${dto.accountCode} - ${dto.accountName}`
+      `Creating account: ${dto.accountCode} - ${dto.accountName}`,
     );
 
     // Validate account code format
@@ -33,11 +33,11 @@ export class AccountService {
     // Check if account already exists
     const existing = await this.accountRepository.findByCode(
       dto.accountCode,
-      dto.userId
+      dto.userId,
     );
     if (existing) {
       throw new BadRequestException(
-        `Account with code ${dto.accountCode} already exists`
+        `Account with code ${dto.accountCode} already exists`,
       );
     }
 
@@ -47,7 +47,7 @@ export class AccountService {
   async getAccount(accountCode: string, userId: string): Promise<Account> {
     const account = await this.accountRepository.findByCode(
       accountCode,
-      userId
+      userId,
     );
     if (!account) {
       throw new NotFoundException(`Account ${accountCode} not found`);
@@ -61,7 +61,7 @@ export class AccountService {
 
   async getAccountsByType(
     userId: string,
-    accountType: AccountType
+    accountType: AccountType,
   ): Promise<Account[]> {
     return this.accountRepository.findByType(userId, accountType);
   }
@@ -69,7 +69,7 @@ export class AccountService {
   async getAccountBalances(userId: string): Promise<AccountBalance[]> {
     const accounts = await this.accountRepository.findByUser(userId);
 
-    return accounts.map(account => ({
+    return accounts.map((account) => ({
       accountCode: account.accountCode,
       accountName: account.accountName,
       accountType: account.accountType,
@@ -90,18 +90,18 @@ export class AccountService {
 
   async updateAccountBalance(
     accountId: string,
-    newBalance: number
+    newBalance: number,
   ): Promise<void> {
     await this.accountRepository.updateBalance(accountId, newBalance);
   }
 
   async adjustAccountBalance(
     accountId: string,
-    amount: number
+    amount: number,
   ): Promise<Account> {
     const account = await this.accountRepository.incrementBalance(
       accountId,
-      amount
+      amount,
     );
     if (!account) {
       throw new NotFoundException("Account not found");
@@ -113,7 +113,7 @@ export class AccountService {
     fromAccountCode: string,
     toAccountCode: string,
     amount: number,
-    userId: string
+    userId: string,
   ): Promise<ValidationResult> {
     const errors: string[] = [];
     const warnings: string[] = [];
@@ -125,7 +125,7 @@ export class AccountService {
     // Validate from account
     const fromAccount = await this.accountRepository.findByCode(
       fromAccountCode,
-      userId
+      userId,
     );
     if (!fromAccount) {
       errors.push(`From account ${fromAccountCode} not found`);
@@ -133,11 +133,11 @@ export class AccountService {
       // Check if account can be debited (for withdrawals)
       if (
         ![AccountType.ASSET, AccountType.EXPENSE].includes(
-          fromAccount.accountType
+          fromAccount.accountType,
         )
       ) {
         warnings.push(
-          `Account ${fromAccountCode} is typically credited, not debited`
+          `Account ${fromAccountCode} is typically credited, not debited`,
         );
       }
 
@@ -153,7 +153,7 @@ export class AccountService {
     // Validate to account
     const toAccount = await this.accountRepository.findByCode(
       toAccountCode,
-      userId
+      userId,
     );
     if (!toAccount) {
       errors.push(`To account ${toAccountCode} not found`);
@@ -167,7 +167,7 @@ export class AccountService {
         ].includes(toAccount.accountType)
       ) {
         warnings.push(
-          `Account ${toAccountCode} is typically debited, not credited`
+          `Account ${toAccountCode} is typically debited, not credited`,
         );
       }
     }
@@ -197,17 +197,17 @@ export class AccountService {
     const accounts = await this.accountRepository.findByUser(userId);
 
     const categorized = {
-      assets: accounts.filter(a => a.accountType === AccountType.ASSET),
+      assets: accounts.filter((a) => a.accountType === AccountType.ASSET),
       liabilities: accounts.filter(
-        a => a.accountType === AccountType.LIABILITY
+        (a) => a.accountType === AccountType.LIABILITY,
       ),
-      equity: accounts.filter(a => a.accountType === AccountType.EQUITY),
-      revenue: accounts.filter(a => a.accountType === AccountType.REVENUE),
-      expenses: accounts.filter(a => a.accountType === AccountType.EXPENSE),
+      equity: accounts.filter((a) => a.accountType === AccountType.EQUITY),
+      revenue: accounts.filter((a) => a.accountType === AccountType.REVENUE),
+      expenses: accounts.filter((a) => a.accountType === AccountType.EXPENSE),
     };
 
     const mapToBalance = (accounts: Account[]): AccountBalance[] =>
-      accounts.map(account => ({
+      accounts.map((account) => ({
         accountCode: account.accountCode,
         accountName: account.accountName,
         accountType: account.accountType,
@@ -255,7 +255,7 @@ export class AccountService {
   async updateAccount(
     accountCode: string,
     userId: string,
-    updateDto: UpdateAccountDto
+    updateDto: UpdateAccountDto,
   ): Promise<Account> {
     const account = await this.getAccount(accountCode, userId);
 
@@ -267,7 +267,7 @@ export class AccountService {
 
     if (account.balance !== 0) {
       throw new BadRequestException(
-        "Cannot deactivate account with non-zero balance"
+        "Cannot deactivate account with non-zero balance",
       );
     }
 

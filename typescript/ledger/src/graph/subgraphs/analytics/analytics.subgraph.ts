@@ -22,7 +22,7 @@ export class AnalyticsSubgraph {
   constructor(
     private readonly analyzeQueryNode: AnalyzeQueryNode,
     private readonly executeToolNode: ExecuteAnalyticsToolNode,
-    private readonly formatResponseNode: FormatAnalyticsResponseNode
+    private readonly formatResponseNode: FormatAnalyticsResponseNode,
   ) {}
 
   /**
@@ -33,13 +33,13 @@ export class AnalyticsSubgraph {
 
     const graph = new StateGraph(AnalyticsState)
       .addNode("analyze_query", (state, config) =>
-        this.analyzeQueryNode.execute(state, config)
+        this.analyzeQueryNode.execute(state, config),
       )
       .addNode("execute_tools", (state, config) =>
-        this.executeToolNode.execute(state, config)
+        this.executeToolNode.execute(state, config),
       )
       .addNode("format_response", (state, config) =>
-        this.formatResponseNode.execute(state, config)
+        this.formatResponseNode.execute(state, config),
       )
       .addEdge(START, "analyze_query")
       .addEdge("analyze_query", "execute_tools")

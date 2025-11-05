@@ -47,7 +47,7 @@ export const DEFAULT_SCORING_CONFIG: ToolScoringConfig = {
 @Injectable()
 export class ToolScoringService {
   constructor(
-    private readonly config: ToolScoringConfig = DEFAULT_SCORING_CONFIG
+    private readonly config: ToolScoringConfig = DEFAULT_SCORING_CONFIG,
   ) {}
 
   /**
@@ -56,20 +56,20 @@ export class ToolScoringService {
   filterTools(
     tools: ToolMetadata[],
     allowedNames: string[] = [],
-    allowedTags: string[] = []
+    allowedTags: string[] = [],
   ): ToolMetadata[] {
     let filtered = [...tools];
 
     // Filter by allowed tool names
     if (allowedNames.length > 0) {
       const allowedSet = new Set(allowedNames);
-      filtered = filtered.filter(tool => allowedSet.has(tool.name));
+      filtered = filtered.filter((tool) => allowedSet.has(tool.name));
     }
 
     // Filter by allowed tags
     if (allowedTags.length > 0) {
-      filtered = filtered.filter(tool =>
-        (tool.tags || []).some(tag => allowedTags.includes(tag))
+      filtered = filtered.filter((tool) =>
+        (tool.tags || []).some((tag) => allowedTags.includes(tag)),
       );
     }
 
@@ -81,14 +81,14 @@ export class ToolScoringService {
    */
   buildShortlist(
     tools: ToolMetadata[],
-    state: ReactGraphStateValues
+    state: ReactGraphStateValues,
   ): ToolMetadata[] {
     const queryTokens = this.tokenizeText(
-      `${state.query || ""} ${state.evidence || ""}`
+      `${state.query || ""} ${state.evidence || ""}`,
     );
 
-    const scoredTools = tools.map(tool =>
-      this.scoreToolRelevance(tool, queryTokens, state)
+    const scoredTools = tools.map((tool) =>
+      this.scoreToolRelevance(tool, queryTokens, state),
     );
 
     // Sort by score (highest first) and take top N
@@ -103,7 +103,7 @@ export class ToolScoringService {
   private scoreToolRelevance(
     tool: ToolMetadata,
     queryTokens: Set<string>,
-    state: ReactGraphStateValues
+    state: ReactGraphStateValues,
   ): ToolMetadata {
     let score = 0;
 
@@ -127,7 +127,7 @@ export class ToolScoringService {
    */
   private calculateTextSimilarityScore(
     tool: ToolMetadata,
-    queryTokens: Set<string>
+    queryTokens: Set<string>,
   ): number {
     let score = 0;
     const { nameMatchWeight, descriptionMatchWeight, tagMatchWeight } =
@@ -151,7 +151,7 @@ export class ToolScoringService {
       }
 
       // Tag matches get good weight
-      if (tags.some(tag => tag.toLowerCase() === token)) {
+      if (tags.some((tag) => tag.toLowerCase() === token)) {
         score += tagMatchWeight;
       }
     }
@@ -164,7 +164,7 @@ export class ToolScoringService {
    */
   private calculateRecentUsagePenalty(
     tool: ToolMetadata,
-    state: ReactGraphStateValues
+    state: ReactGraphStateValues,
   ): number {
     if (!state.workingMemory?.length) {
       return 0;
@@ -172,7 +172,7 @@ export class ToolScoringService {
 
     const recentEntries = state.workingMemory.slice(-2);
     const recentSuccessfulUses = recentEntries.filter(
-      entry => entry.tool === tool.name && entry.observation.success
+      (entry) => entry.tool === tool.name && entry.observation.success,
     );
 
     return recentSuccessfulUses.length * this.config.scoring.recentUsePenalty;
@@ -183,7 +183,7 @@ export class ToolScoringService {
    */
   private calculateSequentialToolBonus(
     tool: ToolMetadata,
-    state: ReactGraphStateValues
+    state: ReactGraphStateValues,
   ): number {
     if (!state.workingMemory?.length) {
       return 0;
@@ -210,7 +210,9 @@ export class ToolScoringService {
       (text || "")
         .toLowerCase()
         .split(this.config.tokenization.splitPattern)
-        .filter(token => token.length > this.config.tokenization.minTokenLength)
+        .filter(
+          (token) => token.length > this.config.tokenization.minTokenLength,
+        ),
     );
   }
 
@@ -219,7 +221,7 @@ export class ToolScoringService {
    */
   formatShortlistForLogging(shortlist: ToolMetadata[]): string {
     return shortlist
-      .map(tool => {
+      .map((tool) => {
         const score = tool.shortlistScore?.toFixed(2) ?? "0.00";
         const tags = (tool.tags || []).join(", ") || "n/a";
         return `${tool.name} (score: ${score}, tags: ${tags})`;

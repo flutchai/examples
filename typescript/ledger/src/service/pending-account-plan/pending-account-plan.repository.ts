@@ -11,7 +11,7 @@ import {
 export class PendingAccountPlanRepository {
   constructor(
     @InjectModel(PendingAccountPlan.name)
-    private model: Model<PendingAccountPlanDocument>
+    private model: Model<PendingAccountPlanDocument>,
   ) {}
 
   async create(data: Partial<PendingAccountPlan>): Promise<PendingAccountPlan> {
@@ -25,7 +25,7 @@ export class PendingAccountPlanRepository {
 
   async findByConversationId(
     conversationId: string,
-    status?: PendingAccountPlanStatus
+    status?: PendingAccountPlanStatus,
   ): Promise<PendingAccountPlan[]> {
     const query: any = { conversationId };
     if (status) {
@@ -44,13 +44,13 @@ export class PendingAccountPlanRepository {
   async updateStatus(
     id: string,
     status: PendingAccountPlanStatus,
-    createdJournalEntryId?: Types.ObjectId
+    createdJournalEntryId?: Types.ObjectId,
   ): Promise<PendingAccountPlan | null> {
     return this.model
       .findByIdAndUpdate(
         id,
         { status, ...(createdJournalEntryId && { createdJournalEntryId }) },
-        { new: true }
+        { new: true },
       )
       .exec();
   }

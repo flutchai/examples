@@ -44,7 +44,7 @@ export class LedgerUIController {
 
   constructor(
     private readonly accountService: AccountService,
-    private readonly journalEntryService: JournalEntryService
+    private readonly journalEntryService: JournalEntryService,
   ) {
     this.logger.log("LedgerUIController initialized successfully");
   }
@@ -57,22 +57,22 @@ export class LedgerUIController {
   @ApiResponse({ status: 200, description: "Account list" })
   async listAccounts(
     @Query("userId") userId: string,
-    @Query("companyId") companyId?: string
+    @Query("companyId") companyId?: string,
   ): Promise<DataEnvelope> {
     this.logger.debug("listAccounts called", { userId, companyId });
 
     try {
       this.logger.debug(
-        `Calling accountService.getUserAccounts with userId: ${userId}`
+        `Calling accountService.getUserAccounts with userId: ${userId}`,
       );
 
       const accounts = await this.accountService.getUserAccounts(userId);
       this.logger.debug(
-        `AccountService returned ${accounts?.length || 0} accounts`
+        `AccountService returned ${accounts?.length || 0} accounts`,
       );
 
       // Transform to UI-friendly format (without code for cleaner UI)
-      const accountsData = accounts.map(account => ({
+      const accountsData = accounts.map((account) => ({
         name: account.accountName,
         type: account.accountType,
         balance: account.balance,
@@ -81,11 +81,11 @@ export class LedgerUIController {
 
       // Group accounts by type for dashboard view
       const groupedAccounts = {
-        assets: accountsData.filter(a => a.type === "ASSET"),
-        liabilities: accountsData.filter(a => a.type === "LIABILITY"),
-        equity: accountsData.filter(a => a.type === "EQUITY"),
-        revenue: accountsData.filter(a => a.type === "REVENUE"),
-        expenses: accountsData.filter(a => a.type === "EXPENSE"),
+        assets: accountsData.filter((a) => a.type === "ASSET"),
+        liabilities: accountsData.filter((a) => a.type === "LIABILITY"),
+        equity: accountsData.filter((a) => a.type === "EQUITY"),
+        revenue: accountsData.filter((a) => a.type === "REVENUE"),
+        expenses: accountsData.filter((a) => a.type === "EXPENSE"),
       };
 
       return {
@@ -130,7 +130,7 @@ export class LedgerUIController {
   async createAccount(
     @Query("userId") userId: string,
     @Query("companyId") companyId?: string,
-    @Body() payload?: any
+    @Body() payload?: any,
   ): Promise<DataEnvelope> {
     const ctx: RequestContext = {
       userId,
@@ -203,7 +203,7 @@ export class LedgerUIController {
   async updateAccount(
     @Query("userId") userId: string,
     @Query("companyId") companyId?: string,
-    @Body() payload?: any
+    @Body() payload?: any,
   ): Promise<DataEnvelope> {
     const ctx: RequestContext = {
       userId,
@@ -232,7 +232,7 @@ export class LedgerUIController {
       const account = await this.accountService.updateAccount(
         accountCode.toString(),
         ctx.userId,
-        updateDto
+        updateDto,
       );
 
       return {
@@ -263,7 +263,7 @@ export class LedgerUIController {
   async getAccountDetails(
     @Query("userId") userId: string,
     @Query("companyId") companyId?: string,
-    @Query("accountCode") accountCode?: string
+    @Query("accountCode") accountCode?: string,
   ): Promise<DataEnvelope> {
     if (!accountCode) {
       throw new Error("Account code is required");
@@ -292,7 +292,7 @@ export class LedgerUIController {
   @ApiResponse({ status: 200, description: "Transaction list retrieved" })
   async listTransactions(
     @Query("userId") userId: string,
-    @Query("companyId") companyId?: string
+    @Query("companyId") companyId?: string,
   ): Promise<DataEnvelope> {
     const ctx: RequestContext = { userId, companyId, method: "GET" };
     try {
@@ -300,14 +300,14 @@ export class LedgerUIController {
       const entries = await this.journalEntryService.getUserJournalEntries(
         ctx.userId,
         undefined, // status filter
-        50 // limit
+        50, // limit
       );
 
       // Transform to UI-friendly format
-      const transactionsData = entries.map(entry => {
+      const transactionsData = entries.map((entry) => {
         // Find debit and credit accounts
-        const debitEntry = entry.entries.find(e => e.debitAmount > 0);
-        const creditEntry = entry.entries.find(e => e.creditAmount > 0);
+        const debitEntry = entry.entries.find((e) => e.debitAmount > 0);
+        const creditEntry = entry.entries.find((e) => e.creditAmount > 0);
 
         return {
           id: entry.journalEntryId,
@@ -322,7 +322,7 @@ export class LedgerUIController {
           creditAccount: creditEntry
             ? `${(creditEntry.accountId as any)?.accountCode} - ${(creditEntry.accountId as any)?.accountName}`
             : "",
-          entries: entry.entries.map(line => ({
+          entries: entry.entries.map((line) => ({
             accountCode: (line.accountId as any)?.accountCode,
             accountName: (line.accountId as any)?.accountName,
             description: line.description,
@@ -410,7 +410,7 @@ export class LedgerUIController {
   @ApiResponse({ status: 200, description: "Account balances retrieved" })
   async getAccountBalances(
     @Query("userId") userId: string,
-    @Query("companyId") companyId?: string
+    @Query("companyId") companyId?: string,
   ): Promise<DataEnvelope> {
     this.logger.debug("getAccountBalances called", { userId, companyId });
 
@@ -424,14 +424,14 @@ export class LedgerUIController {
         await this.journalEntryService.getUserJournalEntries(
           userId,
           undefined, // status filter
-          10 // limit
+          10, // limit
         );
       this.logger.debug(
-        `Found ${recentEntries.length} recent transactions for user ${userId}`
+        `Found ${recentEntries.length} recent transactions for user ${userId}`,
       );
 
       // Map accounts to UI format (without code for cleaner UI)
-      const balances = accounts.map(acc => ({
+      const balances = accounts.map((acc) => ({
         name: acc.accountName,
         type: acc.accountType,
         balance: acc.balance,
@@ -440,14 +440,14 @@ export class LedgerUIController {
 
       // Top 10 asset accounts by balance (shows current financial position)
       const topAccounts = balances
-        .filter(b => b.type === "ASSET")
+        .filter((b) => b.type === "ASSET")
         .sort((a, b) => b.balance - a.balance)
         .slice(0, 10);
 
       // Recent transactions in UI-friendly format (without account codes)
-      const recentTransactions = recentEntries.map(entry => {
-        const debitEntry = entry.entries.find(e => e.debitAmount > 0);
-        const creditEntry = entry.entries.find(e => e.creditAmount > 0);
+      const recentTransactions = recentEntries.map((entry) => {
+        const debitEntry = entry.entries.find((e) => e.debitAmount > 0);
+        const creditEntry = entry.entries.find((e) => e.creditAmount > 0);
 
         return {
           date: entry.date,
@@ -461,19 +461,19 @@ export class LedgerUIController {
       // Calculate summary by account type
       const summary = {
         assets: balances
-          .filter(b => b.type === "ASSET")
+          .filter((b) => b.type === "ASSET")
           .reduce((sum, b) => sum + b.balance, 0),
         liabilities: balances
-          .filter(b => b.type === "LIABILITY")
+          .filter((b) => b.type === "LIABILITY")
           .reduce((sum, b) => sum + b.balance, 0),
         equity: balances
-          .filter(b => b.type === "EQUITY")
+          .filter((b) => b.type === "EQUITY")
           .reduce((sum, b) => sum + b.balance, 0),
         revenue: balances
-          .filter(b => b.type === "REVENUE")
+          .filter((b) => b.type === "REVENUE")
           .reduce((sum, b) => sum + b.balance, 0),
         expense: balances
-          .filter(b => b.type === "EXPENSE")
+          .filter((b) => b.type === "EXPENSE")
           .reduce((sum, b) => sum + b.balance, 0),
       };
 
@@ -530,7 +530,7 @@ export class LedgerUIController {
   @ApiResponse({ status: 201, description: "Default accounts created" })
   async setupDefaultAccounts(
     @Query("userId") userId: string,
-    @Query("companyId") companyId?: string
+    @Query("companyId") companyId?: string,
   ): Promise<DataEnvelope> {
     const ctx: RequestContext = { userId, companyId, method: "POST" };
     // Sample default accounts setup
