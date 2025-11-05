@@ -43,9 +43,13 @@ export class BuildTransactionNode {
       this.logger.log(`Found ${existingAccounts.length} existing accounts`);
 
       // Analyze accounts for all transactions
+      this.logger.debug(`About to analyze ${state.isBatch ? 'BATCH' : 'SINGLE'} transactions`);
+
       const analysis = state.isBatch
         ? await this.analyzeBatchTransactions(state, existingAccounts, config)
         : await this.analyzeSingleTransaction(state, existingAccounts, config);
+
+      this.logger.debug(`Analysis returned: ${JSON.stringify(analysis ? 'HAS_ANALYSIS' : 'NO_ANALYSIS')}`);
 
       const needsConfirmation = analysis.newAccountsNeeded.length > 0;
 
@@ -107,6 +111,22 @@ export class BuildTransactionNode {
       usageRecorder,
       new Date().toISOString().split("T")[0]
     );
+
+    // Log result for debugging
+    this.logger.debug(`Account intelligence result: ${JSON.stringify(result, null, 2)}`);
+
+    // Validate result structure
+    if (!result || !result.suggestedAccounts) {
+      throw new Error(`Invalid result from account intelligence: ${JSON.stringify(result)}`);
+    }
+
+    // Validate nested structure
+    if (!result.suggestedAccounts.debitAccount) {
+      throw new Error(`Missing debitAccount in result: ${JSON.stringify(result.suggestedAccounts)}`);
+    }
+    if (!result.suggestedAccounts.creditAccount) {
+      throw new Error(`Missing creditAccount in result: ${JSON.stringify(result.suggestedAccounts)}`);
+    }
 
     // Convert to our format
     const accountMapping: AccountMapping = {
@@ -233,6 +253,19 @@ export class BuildTransactionNode {
       usageRecorder,
       new Date().toISOString().split("T")[0]
     );
+
+    this.logger.debug(`Batch analysis result: ${JSON.stringify(result, null, 2)}`);
+
+    // Validate result
+    if (!result || !result.accountMappings || result.accountMappings.length === 0) {
+      this.logger.error("Batch analysis returned no account mappings", { result });
+      throw new Error("Batch account analysis failed: no account mappings returned");
+    }
+
+    if (result.accountMappings.length !== transactions.length) {
+      this.logger.error(`Mismatch: ${transactions.length} transactions but ${result.accountMappings.length} mappings`, { result });
+      throw new Error(`Account mapping count mismatch: expected ${transactions.length}, got ${result.accountMappings.length}`);
+    }
 
     // Convert to our format
     const accountMappings: AccountMapping[] = result.accountMappings.map(

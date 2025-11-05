@@ -390,6 +390,15 @@ export class LedgerV1Callbacks {
         };
       }
 
+      // Validate suggestions structure
+      if (!suggestions.debitAccount || !suggestions.creditAccount) {
+        this.logger.error("Invalid suggestions structure", { suggestions });
+        return {
+          success: false,
+          error: "Invalid account suggestions structure",
+        };
+      }
+
       // Create interactive form for editing names
       const message = `
 📝 **Edit account names**
@@ -397,14 +406,14 @@ export class LedgerV1Callbacks {
 You can modify the suggested account names before creating them:
 
 **📈 Debit account:**
-Code: ${suggestions.debitAccount.newAccountSuggestion?.accountCode}
-Current name: ${suggestions.debitAccount.newAccountSuggestion?.accountName}
-Type: ${suggestions.debitAccount.newAccountSuggestion?.accountType}
+Code: ${suggestions.debitAccount?.newAccountSuggestion?.accountCode || 'N/A'}
+Current name: ${suggestions.debitAccount?.newAccountSuggestion?.accountName || 'N/A'}
+Type: ${suggestions.debitAccount?.newAccountSuggestion?.accountType || 'N/A'}
 
 **📉 Credit account:**
-Code: ${suggestions.creditAccount.newAccountSuggestion?.accountCode}
-Current name: ${suggestions.creditAccount.newAccountSuggestion?.accountName}
-Type: ${suggestions.creditAccount.newAccountSuggestion?.accountType}
+Code: ${suggestions.creditAccount?.newAccountSuggestion?.accountCode || 'N/A'}
+Current name: ${suggestions.creditAccount?.newAccountSuggestion?.accountName || 'N/A'}
+Type: ${suggestions.creditAccount?.newAccountSuggestion?.accountType || 'N/A'}
 
 💡 Write new names or press "Keep as is" to continue.
       `;

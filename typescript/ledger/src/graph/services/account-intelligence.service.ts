@@ -132,11 +132,15 @@ export class AccountIntelligenceService {
       `Analyzing batch of ${transactions.length} transactions for accounts`
     );
 
+    this.logger.debug(`Model settings: ${JSON.stringify(modelSettings)}`);
+
     const systemPrompt = this.buildBatchSystemPrompt(
       existingAccounts,
       currentDate
     );
     const userPrompt = this.buildBatchUserPrompt(transactions);
+
+    this.logger.debug(`System prompt length: ${systemPrompt.length}, User prompt length: ${userPrompt.length}`);
 
     try {
       const modelId = modelSettings?.modelId;
@@ -153,15 +157,93 @@ export class AccountIntelligenceService {
         maxTokens,
       });
 
-      const llmWithStructure = (model as any).withStructuredOutput(
-        BatchAccountAnalysisSchema,
-        { name: "batch_account_analyzer", includeRaw: true }
-      );
+      this.logger.debug("About to invoke LLM for batch analysis WITHOUT structured output...");
 
-      const result = (await llmWithStructure.invoke([
-        new SystemMessage(systemPrompt),
-        new HumanMessage(userPrompt),
-      ])) as { parsed: BatchAccountAnalysis; raw: any };
+      // Try calling model directly without withStructuredOutput
+      let rawResult: any = null;
+
+      try {
+        this.logger.debug("Calling model.invoke() directly...");
+
+        const jsonSchema = `
+REQUIRED JSON RESPONSE FORMAT:
+{
+  "accountMappings": [
+    {
+      "transactionIndex": number,
+      "fromAccount": {
+        "name": "string - account name",
+        "code": "string - account code",
+        "type": "ASSET|LIABILITY|EQUITY|REVENUE|EXPENSE",
+        "exists": boolean
+      },
+      "toAccount": {
+        "name": "string - account name",
+        "code": "string - account code",
+        "type": "ASSET|LIABILITY|EQUITY|REVENUE|EXPENSE",
+        "exists": boolean
+      },
+      "reasoning": "string - optional explanation"
+    }
+  ],
+  "newAccountsNeeded": [
+    {
+      "code": "string",
+      "name": "string",
+      "type": "ASSET|LIABILITY|EQUITY|REVENUE|EXPENSE"
+    }
+  ],
+  "overallReasoning": "string"
+}
+
+CRITICAL: Respond ONLY with valid JSON in this exact format. No markdown, no extra text.`;
+
+        rawResult = await model.invoke([
+          new SystemMessage(systemPrompt + "\n\n" + jsonSchema),
+          new HumanMessage(userPrompt),
+        ]);
+
+        this.logger.debug(`Model returned: ${rawResult ? 'HAS_RAW_RESULT' : 'NO_RAW_RESULT'}`);
+        this.logger.debug(`Raw result type: ${typeof rawResult}`);
+      } catch (invokeError) {
+        this.logger.error("Model invoke failed:", invokeError);
+        throw invokeError;
+      }
+
+      // Parse the result manually
+      let result: { parsed: BatchAccountAnalysis; raw: any } | null = null;
+
+      try {
+        this.logger.debug(`Raw result keys: ${JSON.stringify(Object.keys(rawResult || {}))}`);
+
+        const content = rawResult?.content || rawResult?.text || JSON.stringify(rawResult);
+        this.logger.debug(`Attempting to parse content length: ${content?.length || 0}`);
+        this.logger.debug(`Content preview: ${content.substring(0, 500)}`);
+
+        // Extract JSON from markdown code blocks if present
+        let jsonStr = content;
+        if (typeof content === 'string') {
+          // Try to extract JSON from ```json ... ``` blocks
+          const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
+          if (jsonMatch) {
+            jsonStr = jsonMatch[1];
+            this.logger.debug('Extracted JSON from code block');
+          }
+        }
+
+        const parsed = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
+
+        result = {
+          parsed: parsed,
+          raw: rawResult
+        };
+
+        this.logger.debug(`Successfully parsed result with ${parsed.accountMappings?.length || 0} mappings`);
+      } catch (parseError) {
+        this.logger.error("Failed to parse LLM response:", parseError);
+        this.logger.error("Raw response structure:", JSON.stringify(rawResult).substring(0, 1000));
+        throw new Error(`Failed to parse batch analysis result: ${parseError.message}`);
+      }
 
       if (!result || !result.parsed) {
         this.logger.error(

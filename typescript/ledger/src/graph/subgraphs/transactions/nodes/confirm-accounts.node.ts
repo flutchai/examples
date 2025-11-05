@@ -45,6 +45,16 @@ export class ConfirmAccountsNode {
       state.parsedTransactions.map((tx, idx) => {
         const mapping = state.accountMappings[idx];
 
+        if (!mapping) {
+          this.logger.error(`Missing account mapping for transaction ${idx}`, { tx });
+          throw new Error(`Missing account mapping for transaction at index ${idx}`);
+        }
+
+        if (!mapping.debitAccount || !mapping.creditAccount) {
+          this.logger.error(`Incomplete account mapping for transaction ${idx}`, { mapping });
+          throw new Error(`Incomplete account mapping: missing debit or credit account`);
+        }
+
         return {
           description: tx.description,
           amount: tx.amount,
