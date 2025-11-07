@@ -5,7 +5,7 @@ import mongoose, { Connection } from "mongoose";
 import { MongoDBSaver } from "@langchain/langgraph-checkpoint-mongodb";
 import { SimpleV1Builder } from "./graph";
 import { ModelInitializer, McpRuntimeHttpClient } from "@flutchai/flutch-sdk";
-import * as Nodes from "./graph/v1.0.0/nodes";
+import * as Nodes from "./graph/v1.0.3/nodes";
 import {
   BaseGraphServiceController,
   BuilderRegistryService,
@@ -34,12 +34,12 @@ const logger = new Logger("SimpleModule");
           baseGraphType: "flutch.simple",
           versions: [
             {
-              version: "1.0.0",
+              version: "1.0.3",
               builderClass: SimpleV1Builder,
               isDefault: true,
             },
           ],
-          defaultVersionStrategy: "explicit",
+          defaultVersionStrategy: "latest",
         },
       ],
     }),
@@ -127,6 +127,6 @@ export class SimpleModule implements OnModuleInit {
     logger.log(
       "📋 Versioning: Automatic registration via UniversalGraphModule",
     );
-    logger.log("🔄 Available version: 1.0.0 (default)");
+    logger.log("🔄 Available version: 1.0.3 (default)");
   }
 }
