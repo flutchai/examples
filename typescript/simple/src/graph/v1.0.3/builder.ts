@@ -14,15 +14,15 @@ import {
 } from "../../simple.types";
 import * as Nodes from "./nodes";
 /**
- * Builder for Simple graph version 1.0.0
+ * Builder for Simple graph version 1.0.3
  * Basic implementation with single generate node
  */
 @Injectable()
 export class SimpleV1Builder
-  extends AbstractGraphBuilder<"1.0.0">
+  extends AbstractGraphBuilder<"1.0.3">
   implements ISimpleGraphBuilder
 {
-  readonly version = "1.0.0" as const;
+  readonly version = "1.0.3" as const;
 
   private readonly generateNode: Nodes.GenerateNode;
   private readonly executeToolsNode: Nodes.ExecuteToolsNode;
@@ -42,10 +42,10 @@ export class SimpleV1Builder
   }
 
   /**
-   * Build Simple graph v1.0.0 with MCP tools support
+   * Build Simple graph v1.0.3 with MCP tools support
    */
   async buildGraph(_payload?: any): Promise<SimpleCompiledGraph> {
-    this.logger.debug("Building Simple graph v1.0.0 with MCP tools support");
+    this.logger.debug("Building Simple graph v1.0.3 with MCP tools support");
 
     const workflow = new StateGraph<SimpleGraphStateDefinition>(SimpleState)
       .addNode(
@@ -87,7 +87,7 @@ export class SimpleV1Builder
   }
 
   /**
-   * Prepare configuration for v1.0.0
+   * Prepare configuration for v1.0.3
    */
   async prepareConfig(payload: IGraphRequestPayload): Promise<{
     input: SimpleInputValues;

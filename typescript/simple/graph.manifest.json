@@ -3,7 +3,7 @@
   "name": "simple",
   "title": "Simple Conversational Graph",
   "description": "Basic conversational graph with optional reflection capabilities",
-  "detailedDescription": "Multi-version simple graph supporting both basic conversation (v1.0.0) and enhanced processing with reflection capabilities (v2.0.0). Ideal for straightforward AI responses and thoughtful conversation workflows.",
+  "detailedDescription": "Multi-version simple graph supporting both basic conversation (v1.0.3) and enhanced processing with reflection capabilities (v2.0.0). Ideal for straightforward AI responses and thoughtful conversation workflows.",
 
   "category": "basic",
   "author": "Amelie Team",
@@ -51,16 +51,16 @@
   "versioning": {
     "strategy": "semver",
     "defaultVersion": "2.0.0",
-    "supportedVersions": ["1.0.0", "2.0.0"]
+    "supportedVersions": ["1.0.3", ",2.0.0"]
   },
 
   "versions": {
-    "1.0.0": {
+    "1.0.3": {
       "status": "stable",
       "releaseDate": "2024-01-15T00:00:00.000Z",
       "isActive": true,
       "visibility": "public",
-      "configSchemaPath": "./src/versions/v1.0.0/config-schema.json"
+      "configSchemaPath": "./src/versions/v1.0.3/config-schema.json"
     },
     "2.0.0": {
       "status": "beta",

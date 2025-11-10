@@ -65,7 +65,7 @@ export const SimpleGraphInvokeInput =
 // ============================================================================
 
 export interface SimpleGraphParams {
-  graphType: "flutch.simple::1.0.0";
+  graphType: "flutch.simple::1.0.3";
   systemPrompt: string;
   modelId?: string;
   temperature?: number;
@@ -81,7 +81,7 @@ export type SimpleGraphConfigDefinition = StateDefinition &
 export type SimpleConfigValues = StateType<SimpleGraphConfigDefinition>;
 
 export const SimpleGraphConfig = Annotation.Root<SimpleGraphConfigDefinition>({
-  graphType: Annotation<"flutch.simple::1.0.0">(),
+  graphType: Annotation<"flutch.simple::1.0.3">(),
   systemPrompt: Annotation<string>(),
   modelId: Annotation<string>(),
   temperature: Annotation<number>(),
