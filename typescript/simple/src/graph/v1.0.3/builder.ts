@@ -1,5 +1,5 @@
 import { Injectable, Inject, Logger } from "@nestjs/common";
-import { AbstractGraphBuilder } from "@flutchai/flutch-sdk";
+import { AbstractGraphBuilder, IGraphEngine } from "@flutchai/flutch-sdk";
 import { IGraphRequestPayload, StreamChannel } from "@flutchai/flutch-sdk";
 import { MongoDBSaver } from "@langchain/langgraph-checkpoint-mongodb";
 import { StateGraph, START, END } from "@langchain/langgraph";
@@ -30,6 +30,8 @@ export class SimpleV1Builder
   constructor(
     @Inject("CHECKPOINTER")
     private readonly checkpointer: MongoDBSaver,
+    @Inject("GRAPH_ENGINE")
+    private readonly engine: IGraphEngine,
     generateNode: Nodes.GenerateNode,
     executeToolsNode: Nodes.ExecuteToolsNode,
   ) {
