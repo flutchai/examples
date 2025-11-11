@@ -9,7 +9,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@amelie/graph-simple@workspace:."
   dependencies:
-    "@flutchai/flutch-sdk": "npm:^0.1.7"
+    "@flutchai/flutch-sdk": "npm:^0.1.8"
     "@langchain/core": "npm:^1.0.2"
     "@langchain/langgraph": "npm:^1.0.1"
     "@langchain/langgraph-checkpoint-mongodb": "npm:^1.0.0"
@@ -1242,9 +1242,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@flutchai/flutch-sdk@npm:^0.1.7":
-  version: 0.1.7
-  resolution: "@flutchai/flutch-sdk@npm:0.1.7"
+"@flutchai/flutch-sdk@npm:^0.1.8":
+  version: 0.1.8
+  resolution: "@flutchai/flutch-sdk@npm:0.1.8"
   dependencies:
     "@langchain/anthropic": "npm:^0.3.33"
     "@langchain/azure-openai": "npm:^0.0.11"
@@ -1271,7 +1271,7 @@ __metadata:
     reflect-metadata: "npm:^0.2.0"
     rxjs: "npm:^7.8.1"
     zod: "npm:^3.22.4"
-  checksum: 10c0/1cc6e751126b19e271a5353d812026959bc723065153d494766653b31e83a0ea1f6ec59c790b60ef56ac7e41589913c94274342c86a75782fd0d6bc1b7401cb2
+  checksum: 10c0/163f6401d4306b597eb3d43427e3db189914b370f8b169039cd8a945cfc9c67c4c6e47b6f102508b09d6ef467477af09ad91b12f8f7ac50c99286ecb82b3cf23
   languageName: node
   linkType: hard
 

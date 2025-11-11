@@ -1,208 +1,205 @@
-# Simple Graph
+# Simple Graph Service
 
-Versioned Simple graph implementation for Amelie's graph system.
+Simple versioned graph implementation for Amelie's graph system.
 
-## What this is
+## Quick Start
 
-A multi-version graph implementation that demonstrates proper versioning with separate manifests per version. Each version has its own capabilities and configuration.
-
-## How it works
-
-The graph uses LangGraph state management with MongoDB checkpointing. Each version has:
-
-- Its own manifest file with version-specific configuration
-- Separate builder implementation
-- Version-specific features and capabilities
-
-## Graph versions
-
-### v1.0.0 (Stable)
-
-- Basic implementation with single generate node
-- Simple linear workflow: START → generate → END
-- Manifest: `src/versions/v1.0.0/manifest.json`
-
-### v2.0.0 (Beta)
-
-- Enhanced implementation with reflection capabilities
-- Extended workflow: START → generate → reflect → END
-- Adds self-evaluation for improved response quality
-- Manifest: `src/versions/v2.0.0/manifest.json`
-
-### Core components
-
-- **SimpleV1Builder**: Builder for graph version 1.0.0
-- **GenerateNode**: Handles LLM message generation
-- **SimpleState**: State management using LangGraph annotations
-- **SimpleModule**: NestJS module with versioning configuration
-
-## How to use
-
-### Running the service
+### Local Development
 
 ```bash
-# Development mode
-yarn start:dev
+# Install dependencies
+yarn install
 
-# Production mode
+# Run in development mode
+yarn dev
+
+# Build
 yarn build
+
+# Run production build
 yarn start:prod
 ```
 
-### API endpoints
+### Docker Build
+
+The service uses npm version of `@flutchai/flutch-sdk` (currently `^0.1.8`).
+
+**Configure Docker Registry (First Time Setup):**
+
+Copy `.env.example` to `.env` and set your Docker registry:
 
 ```bash
-# Health check
-GET http://localhost:3003/health
-
-# List registered graphs
-GET http://localhost:3003/registry
-
-# Generate response
-POST http://localhost:3003/generate
-{
-  "message": {"role": "user", "content": "Hello"},
-  "threadId": "test-123",
-  "userId": "user-1",
-  "agentId": "agent-1",
-  "graphSettings": {
-    "graphType": "global.simple::1.0.0",
-    "temperature": 0.7,
-    "model": "gpt-4"
-  }
-}
-
-# Stream response
-POST http://localhost:3003/stream
-{
-  "message": {"role": "user", "content": "Tell me a story"},
-  "threadId": "test-456",
-  "userId": "user-1",
-  "agentId": "agent-1",
-  "graphSettings": {
-    "graphType": "global.simple",
-    "systemPrompt": "You are a creative storyteller"
-  }
-}
+cp .env.example .env
 ```
 
-## Configuration
+Edit `.env` and configure:
+```bash
+DOCKER_REGISTRY=your-registry.example.com
+DOCKER_IMAGE_NAME=simple-graph-service
+```
 
-### Environment variables
+**Build from this directory:**
 
 ```bash
-# MongoDB connection
-MONGODB_URI=mongodb://localhost:27017/simple-graph
+# Using the build script (recommended)
+./build-docker.sh 1.0.19-final
 
-# Service port
-PORT=3003
-
-# LLM configuration (optional, can be passed in graphSettings)
-OPENAI_API_KEY=your-api-key
+# Or manually
+docker build -t your-registry/simple-graph-service:1.0.19-final .
 ```
 
-### Graph settings
+**Important:** Build context is the current directory (`examples/typescript/simple`), not the repository root.
 
-```typescript
-{
-  graphType: "global.simple::1.0.0",  // Graph version
-  temperature: 0.7,                     // LLM temperature
-  model: "gpt-4",                      // Model name
-  maxTokens: 2000,                     // Max tokens
-  systemPrompt: "You are helpful"      // System prompt
-}
+### Deploy to Kubernetes
+
+```bash
+# Push image to registry
+docker push your-registry/simple-graph-service:1.0.19-final
+
+# Update deployment YAML with new image version
+# Edit your deployment file with the image tag
+
+# Apply deployment
+kubectl apply -f <your-deployment.yaml>
+
+# Check status
+kubectl get pods -l app=simple-graph-service
+kubectl logs -l app=simple-graph-service --tail=50
 ```
 
-## Project structure
+## Architecture
 
+### Graph Type
+
+- **Base Type:** `flutch.simple`
+- **Versioned Type:** `flutch.simple::1.0.3`
+- **Company Slug:** `flutch`
+- **Graph Name:** `simple`
+
+### Components
+
+- **SimpleV1Builder** (`src/graph/v1.0.3/builder.ts`) - Graph builder for version 1.0.3
+- **GenerateNode** - LLM generation node
+- **ExecuteToolsNode** - Tool execution node
+
+### Dependencies
+
+- `@flutchai/flutch-sdk` - Core SDK (from npm)
+- `@langchain/langgraph` - Graph framework
+- `@langchain/langgraph-checkpoint-mongodb` - Checkpointing
+- NestJS - Application framework
+
+## Environment Variables
+
+### Docker Build Variables
+
+Configure in `.env` file:
+
+```bash
+# Docker registry configuration
+DOCKER_REGISTRY=your-registry.example.com
+DOCKER_IMAGE_NAME=simple-graph-service
 ```
-src/
-├── versions/
-│   ├── v1.0.0/
-│   │   └── builder.ts       # Version 1.0.0 implementation
-│   └── v2.0.0/
-│       └── builder.ts       # Version 2.0.0 implementation
-├── nodes/                   # Shared nodes
-├── simple.module.ts         # Module with version registration
-└── main.ts                  # Entry point
-graph.manifest.json          # Service manifest for discovery
+
+### Runtime Variables
+
+Required variables for Kubernetes deployment:
+
+```yaml
+# Service
+NODE_ENV: production
+PORT: 3000
+
+# Graph identification
+GRAPH_NAME: flutch.simple
+GRAPH_VERSION: 1.0.7
+
+# Databases
+REDIS_URL: redis://redis:6379
+MONGODB_URI: <from secret>
+MONGO_DB_NAME: graph-simple
+
+# Backend integration
+API_URL: http://amelie-service:80
+INTERNAL_API_TOKEN: <from secret>
+
+# LLM API Keys (from secrets)
+ANTHROPIC_API_KEY: <from secret>
+OPENAI_API_KEY: <from secret>
+# ... other LLM providers
 ```
 
 ## Development
 
-### Adding new versions
+### SDK Version
 
-1. Create version directory:
-
-```bash
-mkdir src/versions/v3.0.0
-```
-
-2. Create builder (`src/versions/v3.0.0/builder.ts`):
-
-```typescript
-export class SimpleV3Builder extends AbstractGraphBuilder<"3.0.0"> {
-  readonly version = "3.0.0" as const;
-
-  constructor(
-    @Inject("CHECKPOINTER") checkpointer: MongoDBSaver,
-    @Inject(SimpleTokens.GENERATE_NODE) generateNode: Nodes.GenerateNode
-  ) {
-    super();
-    // Implementation
-  }
-
-  async buildGraph(): Promise<SimpleCompiledGraph> {
-    // Your graph logic here
-  }
-}
-```
-
-3. Register in module:
-
-```typescript
-versioning: [
-  {
-    baseGraphType: "global.simple",
-    versions: [
-      { version: "1.0.0", builderClass: SimpleV1Builder },
-      { version: "2.0.0", builderClass: SimpleV2Builder },
-      { version: "3.0.0", builderClass: SimpleV3Builder, isDefault: true },
-    ],
-  },
-];
-```
-
-**Note:** Individual version manifests are not needed. The root `graph.manifest.json` is used only for service discovery.
-
-### Testing
+This graph uses npm version of the SDK. To update SDK version:
 
 ```bash
-# Unit tests
-yarn test
+# Update package.json
+yarn add @flutchai/flutch-sdk@^0.1.9
 
-# Coverage
-yarn test:cov
+# Rebuild
+yarn build
 ```
 
-## Performance notes
+### Testing Locally
 
-- Uses MongoDB checkpointing for state persistence
-- Supports streaming responses for better UX
-- Automatic connection pooling for MongoDB
+```bash
+# Run with development env vars
+PORT=3000 yarn dev
+
+# Test health endpoint
+curl http://localhost:3000/health
+
+# Test graph types
+curl http://localhost:3000/graph-types
+```
+
+## Build Script
+
+The `build-docker.sh` script reads Docker configuration from `.env` file:
+
+```bash
+# Build with specific version
+./build-docker.sh 1.0.20
+
+# Build with 'latest' tag
+./build-docker.sh
+```
+
+The script:
+1. Loads `DOCKER_REGISTRY` and `DOCKER_IMAGE_NAME` from `.env`
+2. Builds Docker image with the specified version tag
+3. Provides next steps for pushing and deploying
+
+## Deployment History
+
+- **1.0.19-final** - Clean build with npm SDK 0.1.8, optimized Dockerfile
+- **1.0.18-npm** - Switched to npm SDK version from local
+- **1.0.17-clean** - Removed debug logs from SDK
+- **1.0.16-final** - Fixed NestJS dependency injection issues
+- **1.0.7-debug** - Initial Kubernetes deployment
 
 ## Troubleshooting
 
-### MongoDB connection issues
+### Build Issues
 
-Ensure MongoDB is running and accessible at the configured URI.
+If build fails, check:
+1. You're in the correct directory (`examples/typescript/simple`)
+2. `.env` file exists with correct `DOCKER_REGISTRY` and `DOCKER_IMAGE_NAME`
+3. SDK version in package.json matches published version
+4. yarn.lock is up to date
 
-### LLM API errors
+### Runtime Issues
 
-Check that your API keys are configured correctly and have sufficient credits.
+Check pod logs:
+```bash
+kubectl logs -l app=simple-graph-service --tail=100
+```
 
-## What's next
-
-- Add v2.0.0 with enhanced features
-- Implement tool calling capabilities
-- Add multi-modal support
+Common issues:
+- Missing environment variables
+- MongoDB connection issues
+- Redis connection issues
+- LLM API key not configured
